@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd    
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd    
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd    
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.3.xsd    
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd 
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd ">
+	<!-- 读取属性文件 -->
+	<context:property-placeholder location="classpath:jdbc/jdbcMySQL.properties" ignore-unresolvable="true"  
+	/>  
+	<context:property-placeholder location="classpath:jdbc/jdbcOrcale.properties" ignore-unresolvable="true"  
+	/> 
+	<!-- 数据库连接池设置 -->
+	<bean id="dataSourceMysql" class="com.alibaba.druid.pool.DruidDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${druidMySQL.driverClassName}" /><!--数据库驱动类 -->
+		<!-- 测试 185数据库 TEST -->
+		<!--连接路径 -->
+		<property name="url" value="${druidMySQL.url}" />
+		<!-- 配置密码加密和统计相关参数，统计慢sql的单位为毫秒，此处配置为3秒钟，超过3秒钟的sql为慢sql -->
+		<!--用户名 -->
+		<property name="username" value="${druidMySQL.username}" />
+		<!--密码 -->
+		<property name="password" value="${druidMySQL.password}" />
+		<!--配置一些过滤器类 -->
+		<property name="filters" value="${druidMySQL.filters}" />
+		<!-- 配置具体过滤器类中的属性 -->
+		<property name="connectionProperties" value="${druidMySQL.connectionProperties}" />
+		<!-- 配置初始化大小、最小、最大 -->
+		<!--初始化最大的连接数量 -->
+		<property name="initialSize" value="${druidMySQL.initialSize}" />
+		<!--最小的空闲数量 -->
+		<property name="minIdle" value="${druidMySQL.minIdle}" />
+		<!--最大的活跃的数量 -->
+		<property name="maxActive" value="${druidMySQL.maxActive}" />
+		<!--最长的等待时间 -->
+		<property name="maxWait" value="${druidMySQL.maxWait}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，相当于C3P0的idleConnectionTestPeriod 参数，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${druidMySQL.timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${druidMySQL.minEvictableIdleTimeMillis}" />
+		<!-- 测试连接，单位为毫秒 -->
+		<property name="validationQueryTimeout" value="${druidMySQL.validationQueryTimeout}" />
+		<property name="validationQuery" value="${druidMySQL.validationQuery}" />
+		<property name="testWhileIdle" value="${druidMySQL.testWhileIdle}" />
+		<property name="testOnBorrow" value="${druidMySQL.testOnBorrow}" />
+		<property name="testOnReturn" value="${druidMySQL.testOnReturn}" />
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+		<!-- 如果用Oracle，则把poolPreparedStatements配置为true，MySQL可以配置为false。 -->
+		<property name="poolPreparedStatements" value="${druidMySQL.poolPreparedStatements}" />
+		<property name="maxPoolPreparedStatementPerConnectionSize"
+			value="${druidMySQL.maxPoolPreparedStatementPerConnectionSize}" />
+		<!-- 日志文件输出时间 -->
+		<property name="timeBetweenLogStatsMillis" value="300000" />
+		<!-- 监控数据库 -->
+		<property name="proxyFilters">
+			<list>
+				<!-- 配置SQL状态监控 -->
+				<ref bean="stat-filter" />
+				<!-- 配置SQL防火墙 -->
+				<ref bean="wall-filter-mysql" />
+				<!-- 配置SQL日志监控 -->
+				<ref bean="log-filter" />
+			</list>
+		</property>
+		<property name="defaultAutoCommit" value="false" />
+	</bean>
+	<bean id="dataSourceOrcale" class="com.alibaba.druid.pool.DruidDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${druidOrcale.driverClassName}" /><!--数据库驱动类 -->
+		<!-- 测试 185数据库 TEST -->
+		<!--连接路径 -->
+		<property name="url" value="${druidOrcale.url}" />
+		<!-- 配置密码加密和统计相关参数，统计慢sql的单位为毫秒，此处配置为3秒钟，超过3秒钟的sql为慢sql -->
+		<!--用户名 -->
+		<property name="username" value="${druidOrcale.username}" />
+		<!--密码 -->
+		<property name="password" value="${druidOrcale.password}" />
+		<!--配置一些过滤器类 -->
+		<property name="filters" value="${druidOrcale.filters}" />
+		<!-- 配置具体过滤器类中的属性 -->
+		<property name="connectionProperties" value="${druidOrcale.connectionProperties}" />
+		<!-- 配置初始化大小、最小、最大 -->
+		<!--初始化最大的连接数量 -->
+		<property name="initialSize" value="${druidOrcale.initialSize}" />
+		<!--最小的空闲数量 -->
+		<property name="minIdle" value="${druidOrcale.minIdle}" />
+		<!--最大的活跃的数量 -->
+		<property name="maxActive" value="${druidOrcale.maxActive}" />
+		<!--最长的等待时间 -->
+		<property name="maxWait" value="${druidOrcale.maxWait}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，相当于C3P0的idleConnectionTestPeriod 参数，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${druidOrcale.timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${druidOrcale.minEvictableIdleTimeMillis}" />
+		<!-- 测试连接，单位为毫秒 -->
+		<property name="validationQueryTimeout" value="${druidOrcale.validationQueryTimeout}" />
+		<property name="validationQuery" value="${druidOrcale.validationQuery}" />
+		<property name="testWhileIdle" value="${druidOrcale.testWhileIdle}" />
+		<property name="testOnBorrow" value="${druidOrcale.testOnBorrow}" />
+		<property name="testOnReturn" value="${druidOrcale.testOnReturn}" />
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+		<!-- 如果用Oracle，则把poolPreparedStatements配置为true，MySQL可以配置为false。 -->
+		<property name="poolPreparedStatements" value="${druidOrcale.poolPreparedStatements}" />
+		<property name="maxPoolPreparedStatementPerConnectionSize"
+			value="${druidOrcale.maxPoolPreparedStatementPerConnectionSize}" />
+		<!-- 日志文件输出时间 -->
+		<property name="timeBetweenLogStatsMillis" value="300000" />
+		<!-- 监控数据库 -->
+		<property name="proxyFilters">
+			<list>
+				<!-- 配置SQL状态监控 -->
+				<ref bean="stat-filter" />
+				<!-- 配置SQL防火墙 -->
+				<ref bean="wall-filter-mysql" />
+				<!-- 配置SQL日志监控 -->
+				<ref bean="log-filter" />
+			</list>
+		</property>
+		<property name="defaultAutoCommit" value="false" />
+	</bean>
+	<!-- 配置多数据源映射关系 -->
+    <bean id="dataSource" class="com.ruomm.base.datasource.MultipleDataSource">
+        <property name="targetDataSources">
+        <map key-type="java.lang.String">
+        	<entry key="mysql" value-ref="dataSourceMysql"></entry>
+            <entry key="oracle" value-ref="dataSourceOrcale"></entry>
+         </map>
+        </property>
+    	<!-- 默认目标数据源为你主库数据源 -->
+        <property name="defaultTargetDataSource" ref="dataSourceMysql"/>
+    </bean>
+</beans>

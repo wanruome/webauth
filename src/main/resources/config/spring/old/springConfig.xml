@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd    
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd    
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd    
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.3.xsd    
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd 
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd ">
+
+	<!-- mybatis集成 -->
+	<bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler"
+		lazy-init="true" />
+		
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage" value="com.ruomm.dto" />
+		<!-- <property name="typeAliasesSuperType" value="实体类顶级包路径" /> -->
+		<property name="mapperLocations" value="classpath:mappingconfig/*.xml" />
+		<property name="configLocation" value="classpath:config/mybatis-config.xml" />
+	</bean>
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+	<!-- 自动装配DAO -->
+	<!-- <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+		<property name="basePackage" value="com.ruomm.dao"></property>
+	</bean> -->
+	<bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>  
+        <property name="basePackage" value="com.ruomm.dao" />  
+        <property name="properties">
+        	<value>
+        	notEmpty=false
+        	IDENTITY=MYSQL
+        	mappers=tk.mybatis.mapper.common.Mapper,tk.mybatis.mapper.common.MySqlMapper
+        	</value> 
+        </property>  
+    </bean>
+	<!--5 声明式事务管理 -->
+	<!--定义事物管理器，由spring管理事务 -->
+
+	<!-- 事务管理器 -->
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- SpringMVC设置了注解扫描的类包component-scan在事务范围内，此配置应该移到SpringMVC里面-->
+	<!-- 事务注解驱动，标注@Transactional的类和方法将具有事务性 -->
+	<!-- <tx:annotation-driven transaction-manager="txManager"
+		proxy-target-class="true" /> -->
+	<!--加载数据源配置 -->
+
+<!-- 	<aop:config>
+        <aop:pointcut id="service" expression="execution(* com.ctitc.collect.service..*.*(..))"/>
+        <aop:advisor advice-ref="dataSourceExchange" pointcut-ref="service" order="1"/>
+    </aop:config> -->
+<!--     <import resource="classpath:jdbc/springDataSource.xml" />
+	<import resource="classpath:jdbc/springDataSourceWallFilter.xml" /> -->
+
+</beans>

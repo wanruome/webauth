@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newpay.webauth.dal.mapper.LoginUserInfoMapper">
+
+	<resultMap id="baseResultMap" type="com.newpay.webauth.dal.model.LoginUserInfo">
+			<result property="loginId" column="LOGIN_ID" jdbcType="NUMERIC"/>
+			<result property="loginName" column="LOGIN_NAME" jdbcType="VARCHAR"/>
+			<result property="loginMobie" column="LOGIN_MOBILE" jdbcType="VARCHAR"/>
+			<result property="loginEmail" column="LOGIN_EMAIL" jdbcType="VARCHAR"/>
+			<result property="loginPwd" column="LOGIN_PWD" jdbcType="VARCHAR"/>
+			<result property="status" column="STATUS" jdbcType="NUMERIC"/>
+			<result property="version" column="VERSION" jdbcType="NUMERIC"/>
+	</resultMap>
+
+	
+</mapper>
+

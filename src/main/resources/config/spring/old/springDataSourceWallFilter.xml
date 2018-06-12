@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd    
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd    
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd    
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.3.xsd    
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd 
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd ">
+	<!-- 读取属性文件 -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:config/jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+	<!-- mybatis集成 -->
+	<bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler"
+		lazy-init="true" />
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage" value="com.ruomm.dto" />
+		<!-- <property name="typeAliasesSuperType" value="实体类顶级包路径" /> -->
+		<property name="mapperLocations" value="classpath:mappingconfig/*.xml" />
+		<property name="configLocation" value="classpath:config/mybatis-config.xml" />
+	</bean>
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+	<!-- 自动装配DAO -->
+	<!-- <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+		<property name="basePackage" value="com.ruomm.dao"></property>
+	</bean> -->
+	<bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>  
+        <property name="basePackage" value="com.ruomm.dao" />  
+        <property name="properties">
+        	<value>
+        	notEmpty=false
+        	IDENTITY=MYSQL
+        	mappers=tk.mybatis.mapper.common.Mapper,tk.mybatis.mapper.common.MySqlMapper
+        	</value> 
+        </property>  
+    </bean>
+	
+	<!-- SQL状态监控过滤器，需配置 proxyFilters -->
+	<bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+		<property name="slowSqlMillis" value="3000" />
+		<property name="logSlowSql" value="true" />
+		<property name="mergeSql" value="false" />
+		<property name="dbType" value="oracle" />
+	</bean>
+	<!-- SQL日志过滤器，需配置 proxyFilters -->
+	<bean id="log-filter" class="com.alibaba.druid.filter.logging.Log4j2Filter">
+		<property name="connectionLogEnabled" value="false" />
+		<property name="statementLogEnabled" value="true" />
+		<property name="resultSetLogEnabled" value="true" />
+		<property name="statementExecutableSqlLogEnable" value="true" />
+	</bean>
+	<!-- SQL防火墙过滤器，需配置 proxyFilters -->
+	<bean id="wall-filter-mysql" class="com.alibaba.druid.wall.WallFilter">
+		<property name="dbType" value="mysql" />
+		<property name="config" ref="wall-filter-config-mysql" />
+	</bean>
+	<bean id="wall-filter-config-mysql" class="com.alibaba.druid.wall.WallConfig"
+		init-method="init">
+		<!-- 配置项 缺省值 dir 按照dbType分别配置: 
+		mysql : META-INF/druid/wall/mysql 
+		oracle : META-INF/druid/wall/oracle 
+ 		sqlserver : META-INF/druid/wall/sqlserver -->
+		<property name="dir" value="META-INF/druid/wall/mysql" />
+		<!-- <property name="multiStatementAllow" value="true" /> <property name="selectUnionCheck" 
+			value="false" /> -->
+		<property name="functionCheck" value="false" />
+		<property name="strictSyntaxCheck" value="false" />
+		<property name="selectWhereAlwayTrueCheck" value="false" />
+		<property name="selectHavingAlwayTrueCheck" value="false" />
+	</bean>
+	<bean id="wall-filter-oracle" class="com.alibaba.druid.wall.WallFilter">
+		<property name="dbType" value="oracle" />
+		<property name="config" ref="wall-filter-config-oracle" />
+	</bean>
+	<bean id="wall-filter-config-oracle" class="com.alibaba.druid.wall.WallConfig"
+		init-method="init">
+		<!-- 配置项 缺省值 dir 按照dbType分别配置: 
+		mysql : META-INF/druid/wall/mysql 
+		oracle : META-INF/druid/wall/oracle 
+ 		sqlserver : META-INF/druid/wall/sqlserver -->
+		<property name="dir" value="META-INF/druid/wall/oracle" />
+		<!-- <property name="multiStatementAllow" value="true" /> <property name="selectUnionCheck" 
+			value="false" /> -->
+		<property name="functionCheck" value="false" />
+		<property name="strictSyntaxCheck" value="false" />
+		<property name="selectWhereAlwayTrueCheck" value="false" />
+		<property name="selectHavingAlwayTrueCheck" value="false" />
+	</bean>
+	<bean id="wall-filter-sqlserver" class="com.alibaba.druid.wall.WallFilter">
+		<property name="dbType" value="sqlserver" />
+		<property name="config" ref="wall-filter-config-sqlserver" />
+	</bean>
+	<bean id="wall-filter-config-sqlserver" class="com.alibaba.druid.wall.WallConfig"
+		init-method="init">
+		<!-- 配置项 缺省值 dir 按照dbType分别配置: 
+		mysql : META-INF/druid/wall/mysql 
+		oracle : META-INF/druid/wall/oracle 
+ 		sqlserver : META-INF/druid/wall/sqlserver -->
+		<property name="dir" value="META-INF/druid/wall/sqlserver" />
+		<!-- <property name="multiStatementAllow" value="true" /> <property name="selectUnionCheck" 
+			value="false" /> -->
+		<property name="functionCheck" value="false" />
+		<property name="strictSyntaxCheck" value="false" />
+		<property name="selectWhereAlwayTrueCheck" value="false" />
+		<property name="selectHavingAlwayTrueCheck" value="false" />
+	</bean>
+
+	<!--5 声明式事务管理 -->
+	<!--定义事物管理器，由spring管理事务 -->
+
+	<!-- 事务管理器 -->
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- SpringMVC设置了注解扫描的类包component-scan在事务范围内，此配置应该移到SpringMVC里面-->
+	<!-- 事务注解驱动，标注@Transactional的类和方法将具有事务性 -->
+	<!-- <tx:annotation-driven transaction-manager="txManager"
+		proxy-target-class="true" /> -->
+
+</beans>

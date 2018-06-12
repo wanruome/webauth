@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<properties resource="config/jdbc/jdbcType.properties"></properties>
+	<!-- 命名空间 -->
+	<settings>
+
+		<setting name="cacheEnabled" value="true" />
+		<!-- 指定日志框架为LOG4J2 -->
+		<!-- <setting name="logImpl" value="STDOUT_LOGGING"/> -->
+		<!-- 指定日志框架为LOG4J2 -->
+		<setting name="logImpl" value="LOG4J2" />
+	</settings>
+	
+	<plugins>
+		<plugin interceptor="com.github.abel533.mapperhelper.MapperInterceptor">
+			<property name="IDENTITY" value="${MyBatis.DBTYPE}" />
+			<property name="mappers" value="com.github.abel533.mapper.Mapper" />
+		</plugin>
+		<plugin interceptor="com.github.pagehelper.PageInterceptor">
+			<!-- 设置数据库类型 Oracle,Mysql,MariaDB,SQLite,Hsqldb,PostgreSQL六种数据库 -->
+			<property name="helperDialect" value="${MyBatis.DBTYPE}" />
+			<!-- 依据页码查询、count查询、0查询全部、溢出查询最后一页 -->
+			<property name="offsetAsPageNum" value="false" />
+			<property name="rowBoundsWithCount" value="false" />
+			<property name="pageSizeZero" value="true" />
+			<property name="reasonable" value="false" />
+		</plugin>
+	</plugins>
+	<mappers>
+		<mapper class="tk.mybatis.mapper.common.Mapper" />
+		<mapper class="tk.mybatis.mapper.common.MySqlMapper" />
+	</mappers>
+
+	<!-- <typeAliases> <typeAlias alias="mgConfigValue" type="com.newpay.entry.MgConfigValue"/> 
+		<typeAlias alias="mgDeleteValue" type="com.newpay.entry.MgDeleteValue"/> 
+		<typeAlias alias="module" type="com.newpay.entry.Module"/> <typeAlias alias="popedom" 
+		type="com.newpay.entry.Popedom"/> <typeAlias alias="role" type="com.newpay.entry.Role"/> 
+		<typeAlias alias="operator" type="com.newpay.entry.Operator"/> <typeAlias 
+		alias="merchant" type="com.newpay.entry.Merchant"/> <typeAlias alias="merchantAccount" 
+		type="com.newpay.entry.MerchantAccount"/> <typeAlias alias="merchantAccountBalance" 
+		type="com.newpay.entry.MerchantAccountBalance"/> <typeAlias alias="transRecord" 
+		type="com.newpay.entry.TransRecord"/> <typeAlias alias="businessPermission" 
+		type="com.newpay.entry.BusinessPermission"/> <typeAlias alias="businessCode" 
+		type="com.newpay.entry.BusinessCode"/> <typeAlias alias="promotionFee" type="com.newpay.entry.PromotionFee"/> 
+		<typeAlias alias="ipWhite" type="com.newpay.entry.IpWhite"/> <typeAlias alias="verifyRecord" 
+		type="com.newpay.entry.VerifyRecord"/> <typeAlias alias="verifyFingerprint" 
+		type="com.newpay.entry.VerifyFingerprint"/> <typeAlias alias="merchantCharge" 
+		type="com.newpay.entry.MerchantCharge"/> <typeAlias alias="transStatistical" 
+		type="com.newpay.entry.TransStatistical"/> </typeAliases> 映射map <mappers> 
+		<mapper resource="config/oracle/mapping/MgConfigValue.xml"></mapper> <mapper 
+		resource="config/oracle/mapping/MgDeleteValue.xml"></mapper> <mapper resource="config/oracle/mapping/MgPopedom.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/MgUser.xml"></mapper> <mapper resource="config/oracle/mapping/MerchantMapper.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/MerchantAccountMapper.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/MerchantAccountBalanceMapper.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/TransRecordMapper.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/Business.xml"></mapper> <mapper resource="config/oracle/mapping/PromotionFee.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/IpWhite.xml"></mapper> <mapper resource="config/oracle/mapping/VerifyRecord.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/VerifyFingerprint.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/MerchantAccountCharge.xml"></mapper> 
+		<mapper resource="config/oracle/mapping/TransStatistical.xml"></mapper> </mappers> -->
+</configuration>
