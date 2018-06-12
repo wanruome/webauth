@@ -5,6 +5,9 @@
  */
 package com.newpay.webauth.services.impl;
 
+import java.text.ParseException;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +28,13 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 	UuidKeyPairMapper uuidKeyPairMapper;
 
 	@Override
-	public Object getPublicKeyByUUID(UuidKeyPairReqDto uuidKeyPairReqDto) {
-		if (StringUtils.isBlank(uuidKeyPairReqDto.getUuid())
-				|| StringUtils.isBlank(uuidKeyPairReqDto.getUuidVersion())) {
+	public Object getPublicKeyByUuid(UuidKeyPairReqDto uuidKeyPairReqDto) {
+		if (StringUtils.isBlank(uuidKeyPairReqDto.getUuid())) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
+		// if (StringUtils.getLength(uuidKeyPairReqDto.getUuid()) < 32) {
+		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		// }
 		UuidKeyPair queryUuidKeyPair = new UuidKeyPair();
 		queryUuidKeyPair.setUuid(uuidKeyPairReqDto.getUuid());
 		// 获取UUID设置项目
@@ -42,17 +47,24 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			String[] keyPair = RSAUtils.generateRSAKeyPairToArrty();
 			insertBean.setPublicKey(keyPair[0]);
 			insertBean.setPrivateKey(keyPair[1]);
-			insertBean.setUuidVersion(uuidKeyPairReqDto.getUuidVersion());
+			insertBean.setUuidVersion(AppConfig.SDF_DB_VERSION.format(new Date()));
 			insertBean.setVersion(AppConfig.getUpdateVersion(0));
 			int dbResult = uuidKeyPairMapper.insert(insertBean);
 			returnKeyPair = dbResult > 0 ? insertBean : null;
 		}
 		else {
-
-			if (uuidKeyPairReqDto.getUuidVersion().equals(resultUuidKeyPair.getUuidVersion())) {
-
+			String uuidVersion = resultUuidKeyPair.getUuidVersion();
+			long timeSkip = -1000l;
+			try {
+				timeSkip = Math.abs(new Date().getTime() - AppConfig.SDF_DB_VERSION.parse(uuidVersion).getTime());
+			}
+			catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				timeSkip = -1000l;
+			}
+			if (timeSkip <= AppConfig.getKeyPairPublicKeyGetSkipTime() && timeSkip >= 0) {
 				returnKeyPair = resultUuidKeyPair;
-
 			}
 			else {
 				UuidKeyPair insertBean = new UuidKeyPair();
@@ -60,7 +72,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 				String[] keyPair = RSAUtils.generateRSAKeyPairToArrty();
 				insertBean.setPublicKey(keyPair[0]);
 				insertBean.setPrivateKey(keyPair[1]);
-				insertBean.setUuidVersion(uuidKeyPairReqDto.getUuidVersion());
+				insertBean.setUuidVersion(AppConfig.SDF_DB_VERSION.format(new Date()));
 				insertBean.setVersion(AppConfig.getUpdateVersion(resultUuidKeyPair.getVersion()));
 				// 创建Example
 				Example example = new Example(UuidKeyPair.class);

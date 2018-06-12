@@ -11,6 +11,5 @@ import lombok.Data;
 public class UuidKeyPairReqDto {
 	private String uuid;
 	private String loginId;
-	private String uuidVersion;
 
 }

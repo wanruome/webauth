@@ -5,18 +5,18 @@
  */
 package com.newpay.webauth.dal.request;
 
-import javax.validation.constraints.NotEmpty;
-
 import lombok.Data;
 
 @Data
 public class LoginUserReqDto {
-	@NotEmpty
+
 	private String loginId;
 	private String loginName;
 	private String loginMobie;
 	private String loginEmail;
 	private String loginPwd;
 	private String loginType;
+	private String pwdEncrypt;
+	private String uuid;
 
 }

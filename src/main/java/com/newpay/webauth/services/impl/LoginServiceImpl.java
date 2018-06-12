@@ -42,17 +42,6 @@ public class LoginServiceImpl implements LoginService {
 	public Object doRegister(LoginUserReqDto loginUserReqDto) {
 		// TODO Auto-generated method stub
 		boolean VERIFY_IN_DB = true;
-
-		if (null == loginUserReqDto) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
-		}
-		if (StringUtils.isBlank(loginUserReqDto.getLoginMobie()) && StringUtils.isBlank(loginUserReqDto.getLoginEmail())
-				&& StringUtils.isBlank(loginUserReqDto.getLoginName())) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
-		}
-		if (StringUtils.isBlank(loginUserReqDto.getLoginPwd())) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
-		}
 		LoginUserInfo insertUserInfo = new LoginUserInfo();
 		// 验证手机号是否有效
 		if (!StringUtils.isBlank(loginUserReqDto.getLoginMobie())) {

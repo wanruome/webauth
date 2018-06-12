@@ -8,5 +8,5 @@ package com.newpay.webauth.services;
 import com.newpay.webauth.dal.request.UuidKeyPairReqDto;
 
 public interface UuidKeyPairService {
-	public Object getPublicKeyByUUID(UuidKeyPairReqDto uuidKeyPairReqDto);
+	public Object getPublicKeyByUuid(UuidKeyPairReqDto uuidKeyPairReqDto);
 }

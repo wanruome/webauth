@@ -5,7 +5,7 @@
 	<artifactId>webauth</artifactId>
 	<packaging>war</packaging>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>webstudy Maven Webapp</name>
+	<name>webauth Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -282,7 +282,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>webstudy</finalName>
+		<finalName>webauth</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

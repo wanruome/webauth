@@ -19,15 +19,15 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/ras")
-public class RsaController {
+@RequestMapping("/keypair")
+public class UuidKeyPairController {
 	@Autowired
 	UuidKeyPairService uuidKeyPairService;
 
-	@ApiOperation("密码获取")
-	@PostMapping("/callRsaByUUID")
-	public Object getPublicKey(@RequestBody UuidKeyPairReqDto rsaInfoReqDto) {
-		return uuidKeyPairService.getPublicKeyByUUID(rsaInfoReqDto);
+	@ApiOperation("依据UUID获取RSA公钥")
+	@PostMapping("/getPublicKeyByUuid")
+	public Object getPublicKeyByUuid(@RequestBody UuidKeyPairReqDto uuidKeyPairReqDto) {
+		return uuidKeyPairService.getPublicKeyByUuid(uuidKeyPairReqDto);
 
 	}
 }
