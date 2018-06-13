@@ -5,7 +5,10 @@
  */
 package com.newpay.webauth.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.config.PropertyUtil;
+import com.newpay.webauth.dal.core.RequestPwdParse;
+import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.PwdService;
@@ -43,28 +48,61 @@ public class UserInfoController {
 				&& StringUtils.isBlank(userInfoRegister.getName())) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-		if (StringUtils.isBlank(userInfoRegister.getPwd()) || StringUtils.isBlank(userInfoRegister.getUuid())) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
-
-		}
+		// 验证在parseRequsetPwd里面进行了
+		// if (StringUtils.isBlank(userInfoRegister.getPwd()) ||
+		// StringUtils.isBlank(userInfoRegister.getUuid())) {
+		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		//
+		// }
 		if (StringUtils.isBlank(userInfoRegister.getPwdEncrypt())) {
 			// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
-			userInfoRegister.setPwdEncrypt(AppConfig.getUserPwdEncryptDefault());
+			userInfoRegister.setPwdEncrypt(AppConfig.UserPwdEncryptDefault);
 		}
-		if (!pwdService.isEncryptTypeOk(userInfoRegister.getPwdEncrypt())) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		RequestPwdParse pwdParse = pwdService.parseRequsetPwd(userInfoRegister.getPwd(),
+				userInfoRegister.getPwdEncrypt(), userInfoRegister.getUuid());
+		if (!pwdParse.isValid()) {
+			return pwdParse.getReturnResp();
 		}
-		String pwd = pwdService.getRealPassWord(userInfoRegister.getPwd(), userInfoRegister.getPwdEncrypt(),
-				userInfoRegister.getUuid(), userInfoRegister.getMobie());
-		if (StringUtils.isBlank(pwd)) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM, AppConfig.PWD_ERROR_PARSE);
-		}
-		if (StringUtils.getLength(pwd) != StringUtils.getLengthByChar(pwd)) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM, pwd);
-		}
-		userInfoRegister.setPwd(pwd);
+		userInfoRegister.setPwd(pwdParse.getPwdParse());
 		return userInfoService.doRegister(userInfoRegister);
 
+	}
+
+	@ApiOperation("用户注册")
+	@PostMapping("/doModifyPwd")
+	public Object doModifyPwd(@Valid @RequestBody UserInfoModifyPwd userInfoModifyPwd, BindingResult bindingResult) {
+		if (null == bindingResult || bindingResult.hasErrors()) {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		}
+		// if (!pwdService.isEncryptTypeOk(userInfoModifyPwd.getPwdEncrypt())) {
+		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		// }
+		// 验证密码解密
+		return null;
+	}
+
+	@ApiOperation("用户注册")
+	@PostMapping("/doFindPwd")
+	public Object doFindPwd(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
+		return null;
+	}
+
+	@ApiOperation("用户注册")
+	@PostMapping("/doModifyPhone")
+	public Object doModifyPhone(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
+		return null;
+	}
+
+	@ApiOperation("用户注册")
+	@PostMapping("/doModifyEmail")
+	public Object doModifyEmail(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
+		return null;
+	}
+
+	@ApiOperation("用户注册")
+	@PostMapping("/doModifyName")
+	public Object doModifyName(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
+		return null;
 	}
 
 }

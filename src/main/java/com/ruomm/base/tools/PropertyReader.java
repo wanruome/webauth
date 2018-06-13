@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PropertyReader {
 	private Properties props = null;
 	private String propertyPath = null;
@@ -26,7 +29,7 @@ public class PropertyReader {
 		this.propertyPath = propertyPath;
 	}
 
-	public synchronized void reLoadProperty() {
+	public void forceLoadProperty() {
 		props = null;
 		loadProperty();
 	}
@@ -58,15 +61,15 @@ public class PropertyReader {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("加载properties文件内容完成...........");
-		System.out.println("properties文件内容：" + props);
+		log.info("加载'" + propertyPath + "'配置文件内容完成...........");
+		log.info("properties文件内容：" + props);
 	};
 
 	public String getValString(String key) {
 		if (StringUtils.isEmpty(key)) {
 			return null;
 		}
-		loadProperty();
+		// loadProperty();
 		return props.getProperty(key);
 	}
 
@@ -74,7 +77,7 @@ public class PropertyReader {
 		if (StringUtils.isEmpty(key)) {
 			return null;
 		}
-		loadProperty();
+		// loadProperty();
 		String value = props.getProperty(key);
 		if (StringUtils.isEmpty(value)) {
 			return defaultVal;
@@ -156,6 +159,15 @@ public class PropertyReader {
 			}
 			else if (valueString.toLowerCase().endsWith("d")) {
 				value = Long.valueOf(valueString.substring(0, valueString.length() - 1)) * 1000 * 3600 * 24;
+			}
+			else if (valueString.toLowerCase().endsWith("w")) {
+				value = Long.valueOf(valueString.substring(0, valueString.length() - 1)) * 1000 * 3600 * 24 * 7;
+			}
+			else if (valueString.toLowerCase().endsWith("mon")) {
+				value = Long.valueOf(valueString.substring(0, valueString.length() - 3)) * 1000 * 3600 * 24 * 30;
+			}
+			else if (valueString.toLowerCase().endsWith("y")) {
+				value = Long.valueOf(valueString.substring(0, valueString.length() - 1)) * 1000 * 3600 * 365;
 			}
 			else {
 				value = Long.valueOf(valueString.substring(0, valueString.length() - 1)) * 1000;

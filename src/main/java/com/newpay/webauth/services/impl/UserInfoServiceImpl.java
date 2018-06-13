@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.newpay.webauth.dal.mapper.LoginUserInfoMapper;
 import com.newpay.webauth.dal.model.LoginUserInfo;
+import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.DbSeqService;
@@ -100,6 +101,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 		else {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_DB, "注册失败：手机号、用户名、邮箱等重复");
 		}
+	}
+
+	@Override
+	public Object doModifyPwd(UserInfoModifyPwd userInfoModifyPwd) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

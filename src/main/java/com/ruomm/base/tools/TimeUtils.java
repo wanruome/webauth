@@ -1,5 +1,6 @@
 package com.ruomm.base.tools;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -228,8 +229,10 @@ public class TimeUtils {
 		int year = date.getYear() + 1900;
 		return year;
 	}
+
 	/**
 	 * 获取小时和分钟
+	 *
 	 * @param time
 	 * @return
 	 */
@@ -254,8 +257,10 @@ public class TimeUtils {
 		}
 		return hour + ":" + min;
 	}
+
 	/**
 	 * 依据生日获取周岁
+	 *
 	 * @param time
 	 * @return
 	 */
@@ -299,8 +304,10 @@ public class TimeUtils {
 		}
 		return age;
 	}
+
 	/**
 	 * 格式化星期显示
+	 *
 	 * @param day_of_week
 	 * @return
 	 */
@@ -317,7 +324,8 @@ public class TimeUtils {
 			return weeksname[day_of_week];
 		}
 	}
-	//是否闰年
+
+	// 是否闰年
 	public static Boolean isLeapyear(int year) {
 		if (year % 4 == 0 && year % 100 != 0) {
 			return true;
@@ -329,7 +337,8 @@ public class TimeUtils {
 			return false;
 		}
 	}
-	//是否闰年
+
+	// 是否闰年
 	public static Boolean isLeapyear() {
 		return isLeapyear(getValueOfYearByDate(new Date()));
 	}
@@ -352,5 +361,33 @@ public class TimeUtils {
 			}
 		}
 		return daysnumberinmonth;
+	}
+
+	public static boolean isCacheOk(long cacheTime, long validTime) {
+		long timeSkip = Math.abs(new Date().getTime() - cacheTime);
+		if (timeSkip > validTime || timeSkip < 0) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+	public static boolean isCacheOk(String cacheTime, SimpleDateFormat sdf, long validTime) {
+		long timeSkip = -1000l;
+		try {
+			timeSkip = Math.abs(new Date().getTime() - sdf.parse(cacheTime).getTime());
+		}
+		catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			timeSkip = -1000l;
+		}
+		if (timeSkip > validTime || timeSkip < 0) {
+			return false;
+		}
+		else {
+			return true;
+		}
 	}
 }

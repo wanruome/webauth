@@ -5,10 +5,13 @@
  */
 package com.newpay.webauth.services;
 
+import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 
 public interface UserInfoService {
 	public String doLogin();
 
 	public Object doRegister(UserInfoRegisterReqDto loginUserReqDto);
+
+	public Object doModifyPwd(UserInfoModifyPwd userInfoModifyPwd);
 }

@@ -5,10 +5,15 @@
  */
 package com.newpay.webauth.services;
 
+import com.newpay.webauth.dal.core.RequestPwdParse;
+
 public interface PwdService {
-	public String getRealPassWord(String pwdRequest, String pwdEncrypt, String pwdUuid, String phone);
+	// public String getRealPassWord(String pwdRequest, String pwdEncrypt, String pwdUuid, String
+	// phone);
 
-	public boolean isEncryptTypeOk(String pwdEncrypt);
+	public RequestPwdParse parseRequsetPwd(String pwdRequest, String pwdEncrypt, String pwdUuid);
 
-	public boolean isPwdRuleOK(String pwd);
+	// public boolean isEncryptTypeOk(String pwdEncrypt);
+	//
+	// public boolean isPwdRuleOK(String pwd);
 }

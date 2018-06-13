@@ -6,7 +6,6 @@
 package com.newpay.webauth.services.impl;
 
 import java.security.PublicKey;
-import java.text.ParseException;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import com.ruomm.base.tools.Base64;
 import com.ruomm.base.tools.DesUtil;
 import com.ruomm.base.tools.RSAUtils;
 import com.ruomm.base.tools.StringUtils;
+import com.ruomm.base.tools.TimeUtils;
 
 @Service
 public class UuidKeyPairServiceImpl implements UuidKeyPairService {
@@ -40,7 +40,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 		// }
 		// 转换默认秘钥
 		if (StringUtils.isBlank(uuidKeyPairReqDto.getKeyType())) {
-			uuidKeyPairReqDto.setKeyType(AppConfig.getUserPwdEncryptDefault());
+			uuidKeyPairReqDto.setKeyType(AppConfig.UserPwdEncryptDefault);
 		}
 		String uuid = uuidKeyPairReqDto.getUuid();
 		String keyType = null;
@@ -51,6 +51,9 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 		else if (uuidKeyPairReqDto.getKeyType().equals(AppConfig.PWD_ENCRYPT_3DES)
 				|| uuidKeyPairReqDto.getKeyType().equals(AppConfig.PWD_ENCRYPT_3DESMD5)) {
 			keyType = AppConfig.PWD_ENCRYPT_3DES;
+		}
+		else {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
 		UuidKeyPair queryUuidKeyPair = new UuidKeyPair();
 		queryUuidKeyPair.setUuid(uuid);
@@ -72,23 +75,29 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 		}
 		else {
 			String keyVersion = resultUuidKeyPair.getKeyVersion();
-			long timeSkip = -1000l;
-			try {
-				timeSkip = Math.abs(new Date().getTime() - AppConfig.SDF_DB_VERSION.parse(keyVersion).getTime());
-			}
-			catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				timeSkip = -1000l;
-			}
-			if (timeSkip <= AppConfig.getKeyPairPublicKeyGetSkipTime() && timeSkip >= 0) {
+			boolean versionCacheFlag = TimeUtils.isCacheOk(keyVersion, AppConfig.SDF_DB_VERSION,
+					AppConfig.KeyPairPublicKeyGetSkipTime);
+			// long timeSkip = -1000l;
+			// try {
+			// timeSkip = Math.abs(new Date().getTime() -
+			// AppConfig.SDF_DB_VERSION.parse(keyVersion).getTime());
+			// }
+			// catch (ParseException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// timeSkip = -1000l;
+			// }
+			// if (timeSkip <= AppConfig.KeyPairPublicKeyGetSkipTime && timeSkip >= 0) {
+			// returnKeyPair = resultUuidKeyPair;
+			// }
+			if (versionCacheFlag) {
 				returnKeyPair = resultUuidKeyPair;
 			}
 			else {
 				UuidKeyPair updateBean = new UuidKeyPair();
 				updateBean.setUuid(uuid);
 				String[] keyPair = createKeyPairString(keyType);
-				updateBean.setKeyType(uuid);
+				updateBean.setKeyType(keyType);
 				updateBean.setPublicKey(keyPair[0]);
 				updateBean.setPrivateKey(keyPair[1]);
 				updateBean.setKeyVersion(AppConfig.SDF_DB_VERSION.format(new Date()));
@@ -99,6 +108,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 				Example.Criteria criteria = example.createCriteria();
 				// 添加条件
 				criteria.andEqualTo("uuid", resultUuidKeyPair.getUuid());
+				criteria.andEqualTo("keyType", resultUuidKeyPair.getKeyType());
 				criteria.andEqualTo("version", resultUuidKeyPair.getVersion());
 
 				int dbResult = uuidKeyPairMapper.updateByExample(updateBean, example);
