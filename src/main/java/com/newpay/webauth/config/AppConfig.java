@@ -12,6 +12,7 @@ import com.ruomm.base.tools.PropertyReader;
 public class AppConfig {
 	// 从WebApp.properties读取的配置属性值
 	public static PropertyReader configProperty = new PropertyReader("config/app/WebApp.properties");
+	public static String CompanyName = null;
 	public static Long KeyPairPublicKeyValidTime = null;
 	public static Long KeyPairPublicKeyGetSkipTime = null;
 	public static String UserPwdEncryptMethod = null;
@@ -22,6 +23,8 @@ public class AppConfig {
 	 * * 数字、大写字母、小写字母、特殊符号 密码强度，0不限制，1不能为纯数字，2为至少2种组合，3为至少3种组合，4为4种组合 //
 	 */
 	public static Integer UserPwdMinRule = null;
+	public static Integer VerfiyCodeLength = null;
+	public static Long VerfiyCodeValidTime = null;
 	static {
 		forceLoadProperty();
 	}
@@ -35,7 +38,9 @@ public class AppConfig {
 			UserPwdMinLength = null;
 			UserPwdMaxLength = null;
 			UserPwdMinRule = null;
+			VerfiyCodeLength = null;
 			configProperty.forceLoadProperty();
+			CompanyName = configProperty.getValString("CompanyName", "浙江盛炬支付");
 			KeyPairPublicKeyValidTime = configProperty.getValLongTime("keypair.publickey_valid_time");
 			KeyPairPublicKeyGetSkipTime = configProperty.getValLongTime("keypair.publickey_get_skip_time");
 			UserPwdEncryptMethod = configProperty.getValString("user.pwd_encrypt_method");
@@ -43,6 +48,14 @@ public class AppConfig {
 			UserPwdMinLength = configProperty.getValInteger("user.pwd_min_length");
 			UserPwdMaxLength = configProperty.getValInteger("user.pwd_max_length", 24);
 			UserPwdMinRule = configProperty.getValInteger("user.pwd_min_rule");
+			VerfiyCodeLength = configProperty.getValInteger("msg.verify_code_length", 6);
+			if (VerfiyCodeLength < 4) {
+				VerfiyCodeLength = 4;
+			}
+			if (VerfiyCodeLength > 10) {
+				VerfiyCodeLength = 10;
+			}
+			VerfiyCodeValidTime = configProperty.getValLongTime("msg.verify_code_valid_time", 15 * 60 * 1000l);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -50,6 +63,7 @@ public class AppConfig {
 
 	}
 
+	public static SimpleDateFormat SDF_DB_DATE = new SimpleDateFormat("yyyyMMdd");
 	public static SimpleDateFormat SDF_DB_VERSION = new SimpleDateFormat("yyyyMMddHHmmss");
 	public static String PWD_ENCRYPT_NONE = "NONE";
 	public static String PWD_ENCRYPT_MD5 = "MD5";

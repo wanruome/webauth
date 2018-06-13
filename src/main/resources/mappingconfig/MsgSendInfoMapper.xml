@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newpay.webauth.dal.mapper.MsgSendInfoMapper">
+
+	<resultMap id="baseResultMap" type="com.newpay.webauth.dal.model.MsgSendInfo">
+			<result property="msgId" column="MSG_ID" jdbcType="NUMERIC"/>
+			<result property="userId" column="USER_ID" jdbcType="NUMERIC"/>
+			<result property="msgType" column="MSG_TYPE" jdbcType="NUMERIC"/>
+			<result property="msgToken" column="MSG_TOKEN" jdbcType="VARCHAR"/>
+			<result property="msgFunction" column="MSG_FUNCTION" jdbcType="VARCHAR"/>
+			<result property="msgAddr" column="MSG_ADDR" jdbcType="VARCHAR"/>
+			<result property="msgCode" column="MSG_CODE" jdbcType="VARCHAR"/>
+			<result property="msgContent" column="MSG_CONTENT" jdbcType="VARCHAR"/>
+			<result property="msgValidTime" column="MSG_VALID_TIME" jdbcType="VARCHAR"/>
+			<result property="msgStatus" column="MSG_STATUS" jdbcType="VARCHAR"/>
+			<result property="createDate" column="CREATE_DATE" jdbcType="VARCHAR"/>
+			<result property="createTime" column="CREATE_TIME" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	
+</mapper>
+

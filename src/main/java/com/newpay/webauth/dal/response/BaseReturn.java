@@ -14,6 +14,8 @@ public class BaseReturn {
 	public static String ERROR_CODE_CORE = "e500";
 	public static String ERROR_CODE_DB = "e400";
 	public static String ERROR_CODE_SYSTEM = "400";
+	public static String ERROR_TOKEN_MISS = "e001";
+	public static String ERROR_TOKEN_INVALID = "e000";
 	public static String SUCESS_CODE = "0000";
 
 	public static JSONObject toFAIL(String code) {
@@ -51,6 +53,12 @@ public class BaseReturn {
 				}
 				else if (realCode.equals(ERROR_CODE_SYSTEM)) {
 					realMsg = "未知错误，请求失败，请重试";
+				}
+				else if (realCode.equalsIgnoreCase(ERROR_TOKEN_MISS)) {
+					realMsg = "验证信息丢失";
+				}
+				else if (realCode.equalsIgnoreCase(ERROR_TOKEN_INVALID)) {
+					realMsg = "验证信息失效";
 				}
 				else {
 					realMsg = "FAIL";
