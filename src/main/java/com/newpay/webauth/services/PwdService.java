@@ -11,7 +11,7 @@ public interface PwdService {
 	// public String getRealPassWord(String pwdRequest, String pwdEncrypt, String pwdUuid, String
 	// phone);
 
-	public RequestPwdParse parseRequsetPwd(String pwdRequest, String pwdEncrypt, String pwdUuid);
+	public RequestPwdParse parseRequsetPwd(String pwdRequest, String pwdEncrypt, String pwdUuid, boolean isRuleCheck);
 
 	// public boolean isEncryptTypeOk(String pwdEncrypt);
 	//

@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.config.PropertyUtil;
 import com.newpay.webauth.dal.core.RequestPwdParse;
+import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
+import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
+import com.newpay.webauth.dal.request.userinfo.UserInfoModifyName;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
@@ -59,7 +62,7 @@ public class UserInfoController {
 			userInfoRegister.setPwdEncrypt(AppConfig.UserPwdEncryptDefault);
 		}
 		RequestPwdParse pwdParse = pwdService.parseRequsetPwd(userInfoRegister.getPwd(),
-				userInfoRegister.getPwdEncrypt(), userInfoRegister.getUuid());
+				userInfoRegister.getPwdEncrypt(), userInfoRegister.getUuid(), true);
 		if (!pwdParse.isValid()) {
 			return pwdParse.getReturnResp();
 		}
@@ -77,8 +80,21 @@ public class UserInfoController {
 		// if (!pwdService.isEncryptTypeOk(userInfoModifyPwd.getPwdEncrypt())) {
 		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		// }
+		RequestPwdParse oldPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getOldPwd(),
+				userInfoModifyPwd.getOldPwdEncrypt(), userInfoModifyPwd.getUuid(), false);
+		RequestPwdParse newPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getNewPwd(),
+				userInfoModifyPwd.getNewPwdEncrypt(), userInfoModifyPwd.getUuid(), true);
+
+		if (!newPwdParse.isValid()) {
+			return newPwdParse.getReturnResp();
+		}
+		if (!oldPwdParse.isValid()) {
+			return newPwdParse.getReturnResp();
+		}
+		userInfoModifyPwd.setNewPwd(newPwdParse.getPwdParse());
+		userInfoModifyPwd.setOldPwd(oldPwdParse.getPwdParse());
 		// 验证密码解密
-		return null;
+		return userInfoService.doModifyPwd(userInfoModifyPwd);
 	}
 
 	@ApiOperation("用户注册")
@@ -88,21 +104,32 @@ public class UserInfoController {
 	}
 
 	@ApiOperation("用户注册")
-	@PostMapping("/doModifyPhone")
-	public Object doModifyPhone(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
-		return null;
+	@PostMapping("/doModifyMobie")
+	public Object doModifyMobie(@Valid @RequestBody UserInfoModifyMobie userInfoModifyMobie,
+			BindingResult bindingResult) {
+		if (null == bindingResult || bindingResult.hasErrors()) {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		}
+		return userInfoService.doModifyMobie(userInfoModifyMobie);
 	}
 
 	@ApiOperation("用户注册")
 	@PostMapping("/doModifyEmail")
-	public Object doModifyEmail(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
-		return null;
+	public Object doModifyEmail(@Valid @RequestBody UserInfoModifyEmail userInfoModifyEmail,
+			BindingResult bindingResult) {
+		if (null == bindingResult || bindingResult.hasErrors()) {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		}
+		return userInfoService.doModifyEmail(userInfoModifyEmail);
 	}
 
 	@ApiOperation("用户注册")
 	@PostMapping("/doModifyName")
-	public Object doModifyName(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
-		return null;
+	public Object doModifyName(@Valid @RequestBody UserInfoModifyName userInfoModifyName, BindingResult bindingResult) {
+		if (null == bindingResult || bindingResult.hasErrors()) {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		}
+		return userInfoService.doModifyName(userInfoModifyName);
 	}
 
 }

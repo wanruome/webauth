@@ -6,19 +6,21 @@
 package com.newpay.webauth.dal.request.userinfo;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
+
+import com.ruomm.base.tools.RegexUtil;
 
 import lombok.Data;
 
 @Data
-public class UserInfoModifyPwd {
+public class UserInfoModifyEmail {
 	@NotEmpty
 	private String userId;
 	@NotEmpty
-	private String newPwd;
+	@Pattern(regexp = RegexUtil.EMAILS)
+	private String newEmail;
 	@NotEmpty
-	private String oldPwd;
+	private String verifyCode;
 	@NotEmpty
-	private String uuid;
-	private String newPwdEncrypt;
-	private String oldPwdEncrypt;
+	private String authToken;
 }

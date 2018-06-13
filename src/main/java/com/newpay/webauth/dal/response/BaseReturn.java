@@ -32,7 +32,7 @@ public class BaseReturn {
 		return createResponse(SUCESS_CODE, msg, data, true);
 	}
 
-	public static JSONObject createResponse(String code, String msg, Object data, boolean isOneRoot) {
+	private static JSONObject createResponse(String code, String msg, Object data, boolean isOneRoot) {
 		String realCode = StringUtils.isBlank(code) ? ERROR_CODE_SYSTEM : code;
 		String realMsg = null;
 		if (StringUtils.isBlank(msg)) {

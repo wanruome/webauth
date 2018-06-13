@@ -34,7 +34,10 @@ public class PwdServiceImpl implements PwdService {
 		return AppConfig.UserPwdEncryptMethod.contains("|" + pwdEncrypt + "|");
 	}
 
-	private boolean isPwdRuleOK(String pwd, int minLength, int maxLength, int minRule) {
+	private boolean isPwdRuleOK(String pwd, int minLength, int maxLength, int minRule, boolean isRuleCheck) {
+		if (!isRuleCheck) {
+			return true;
+		}
 
 		if (StringUtils.isBlank(pwd)) {
 			return false;
@@ -196,7 +199,7 @@ public class PwdServiceImpl implements PwdService {
 	 * 解析请求的密码，返回解析是否成功和解析好的密码字段
 	 */
 	@Override
-	public RequestPwdParse parseRequsetPwd(String pwdRequest, String pwdEncrypt, String pwdUuid) {
+	public RequestPwdParse parseRequsetPwd(String pwdRequest, String pwdEncrypt, String pwdUuid, boolean isRuleCheck) {
 		// TODO Auto-generated method stub
 		RequestPwdParse pwdParse = new RequestPwdParse();
 		pwdParse.setValid(false);
@@ -212,7 +215,7 @@ public class PwdServiceImpl implements PwdService {
 		}
 		if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_NONE)) {
 			if (isPwdRuleOK(pwdRequest, AppConfig.UserPwdMinLength, AppConfig.UserPwdMaxLength,
-					AppConfig.UserPwdMinRule)) {
+					AppConfig.UserPwdMinRule, isRuleCheck)) {
 				String pwdResult = EncryptUtils.encodingMD5(EncryptUtils.encodingMD5(pwdRequest));
 				pwdParse.setPwdParse(pwdResult);
 				pwdParse.setValid(true);
@@ -268,8 +271,8 @@ public class PwdServiceImpl implements PwdService {
 				return pwdParse;
 			}
 			else {
-				if (isPwdRuleOK(pwd, AppConfig.UserPwdMinLength, AppConfig.UserPwdMaxLength,
-						AppConfig.UserPwdMinRule)) {
+				if (isPwdRuleOK(pwd, AppConfig.UserPwdMinLength, AppConfig.UserPwdMaxLength, AppConfig.UserPwdMinRule,
+						isRuleCheck)) {
 					String pwdResult = EncryptUtils.encodingMD5(EncryptUtils.encodingMD5(pwd));
 					pwdParse.setPwdParse(pwdResult);
 					pwdParse.setValid(true);
