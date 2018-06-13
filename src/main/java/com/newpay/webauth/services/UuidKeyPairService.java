@@ -5,7 +5,7 @@
  */
 package com.newpay.webauth.services;
 
-import com.newpay.webauth.dal.request.UuidKeyPairReqDto;
+import com.newpay.webauth.dal.request.keypair.UuidKeyPairReqDto;
 
 public interface UuidKeyPairService {
 	public Object getPublicKeyByUuid(UuidKeyPairReqDto uuidKeyPairReqDto);

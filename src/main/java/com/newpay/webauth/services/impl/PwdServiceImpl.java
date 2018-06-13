@@ -17,6 +17,7 @@ import com.newpay.webauth.dal.mapper.UuidKeyPairMapper;
 import com.newpay.webauth.dal.model.UuidKeyPair;
 import com.newpay.webauth.services.PwdService;
 import com.ruomm.base.tools.Base64;
+import com.ruomm.base.tools.DesUtil;
 import com.ruomm.base.tools.EncryptUtils;
 import com.ruomm.base.tools.RSAUtils;
 import com.ruomm.base.tools.StringUtils;
@@ -41,8 +42,8 @@ public class PwdServiceImpl implements PwdService {
 		else if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_MD5)) {
 			return EncryptUtils.encodingMD5(pwdRequest);
 		}
-		else if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_RSAMD5)) {
-			String pwd = getPwdByRSA(pwdRequest, pwdUuid, phone);
+		else if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_RSAMD5) || pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_3DESMD5)) {
+			String pwd = getPwdByRsaOr3Des(pwdRequest, pwdEncrypt, pwdUuid, phone);
 			if (StringUtils.isBlank(pwd)) {
 				return null;
 			}
@@ -50,8 +51,8 @@ public class PwdServiceImpl implements PwdService {
 				return EncryptUtils.encodingMD5(pwd);
 			}
 		}
-		else if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_RSA)) {
-			String pwd = getPwdByRSA(pwdRequest, pwdUuid, phone);
+		else if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_RSA) || pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_3DES)) {
+			String pwd = getPwdByRsaOr3Des(pwdRequest, pwdEncrypt, pwdUuid, phone);
 			if (StringUtils.isBlank(pwd)) {
 				return null;
 			}
@@ -168,7 +169,7 @@ public class PwdServiceImpl implements PwdService {
 
 	}
 
-	private String getPwdByRSA(String pwdRequest, String uuid, String phone) {
+	private String getPwdByRsaOr3Des(String pwdRequest, String pwdEncrypt, String uuid, String phone) {
 		if (StringUtils.isBlank(uuid)) {
 			return null;
 		}
@@ -177,15 +178,22 @@ public class PwdServiceImpl implements PwdService {
 		// }
 		UuidKeyPair queryUuidKeyPair = new UuidKeyPair();
 		queryUuidKeyPair.setUuid(uuid);
+		if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_RSA) || pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_RSAMD5)) {
+			queryUuidKeyPair.setKeyType(AppConfig.PWD_ENCRYPT_RSA);
+		}
+		else if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_3DES) || pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_3DESMD5)) {
+			queryUuidKeyPair.setKeyType(AppConfig.PWD_ENCRYPT_3DES);
+		}
+
 		// 获取UUID设置项目
 		UuidKeyPair resultUuidKeyPair = uuidKeyPairMapper.selectByPrimaryKey(queryUuidKeyPair);
 		if (null == resultUuidKeyPair) {
 			return null;
 		}
-		String uuidVersion = resultUuidKeyPair.getUuidVersion();
+		String keyVersion = resultUuidKeyPair.getKeyVersion();
 		long timeSkip = -1000l;
 		try {
-			timeSkip = Math.abs(new Date().getTime() - AppConfig.SDF_DB_VERSION.parse(uuidVersion).getTime());
+			timeSkip = Math.abs(new Date().getTime() - AppConfig.SDF_DB_VERSION.parse(keyVersion).getTime());
 		}
 		catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -196,8 +204,14 @@ public class PwdServiceImpl implements PwdService {
 			return null;
 		}
 		try {
-			PrivateKey privateKey = RSAUtils.loadPrivateKey(resultUuidKeyPair.getPrivateKey());
-			String pwd = new String(RSAUtils.decryptData(Base64.decode(pwdRequest), privateKey), "UTF-8");
+			String pwd = null;
+			if (resultUuidKeyPair.getKeyType().equals(AppConfig.PWD_ENCRYPT_RSA)) {
+				PrivateKey privateKey = RSAUtils.loadPrivateKey(resultUuidKeyPair.getPrivateKey());
+				pwd = new String(RSAUtils.decryptData(Base64.decode(pwdRequest), privateKey), "UTF-8");
+			}
+			else if (resultUuidKeyPair.getKeyType().equals(AppConfig.PWD_ENCRYPT_3DES)) {
+				pwd = DesUtil.decryptString(pwdRequest, resultUuidKeyPair.getPrivateKey());
+			}
 			return pwd;
 		}
 		catch (Exception e) {

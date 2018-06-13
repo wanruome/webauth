@@ -17,12 +17,15 @@ public class UuidKeyPair {
 	@Id
 	@Column(name = "UUID")
 	private String uuid;
+	@Id
+	@Column(name = "KEY_TYPE")
+	private String keyType;
 	@Column(name = "PUBLIC_KEY")
 	private String publicKey;
 	@Column(name = "PRIVATE_KEY")
 	private String privateKey;
-	@Column(name = "UUID_VERSION")
-	private String uuidVersion;
+	@Column(name = "KEY_VERSION")
+	private String keyVersion;
 	@Column(name = "VERSION")
 	private Integer version;
 }

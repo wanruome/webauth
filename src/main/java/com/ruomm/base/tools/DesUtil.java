@@ -126,7 +126,7 @@ public abstract class DesUtil {
 	 * @return byte[] 二进制密钥
 	 */
 	public static byte[] initKey() {
-		byte[] dataDes=null;
+		byte[] dataDes = null;
 		try {
 			/**
 			 * 实例化 使用128位或192位长度密钥 KeyGenerator.getInstance(KEY_ALGORITHM,"BC");
@@ -142,12 +142,99 @@ public abstract class DesUtil {
 			// 生成秘密密钥
 			SecretKey secretKey = kg.generateKey();
 			// 获得密钥的二进制编码形式
-			dataDes= secretKey.getEncoded();
+			dataDes = secretKey.getEncoded();
 		}
 		catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return dataDes;
+	}
+
+	public static String initKeyStr() {
+		String data = Base64.encode(initKey());
+		return data;
+	}
+
+	/**
+	 * 解密
+	 *
+	 * @param data
+	 *            待解密数据
+	 * @param key
+	 *            密钥
+	 * @return String 解密数据
+	 */
+	public static String decryptString(String data, String key) {
+		return decryptString(data, key, null);
+	}
+
+	public static String decryptString(String data, String key, String charsetName) {
+		String dataDes = null;
+		try {
+			String charset = StringUtils.isBlank(charsetName) ? "UTF-8" : charsetName;
+			// 还原密钥
+			Key k = toKey(Base64.decode(key));
+			Cipher cipher;
+			/**
+			 * 实例化 使用PKCS7Padding填充方式，按如下代码实现 Cipher.getInstance(CIPHER_ALGORITHM,"BC");
+			 */
+			cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+			// 初始化，设置为解密模式
+			cipher.init(Cipher.DECRYPT_MODE, k);
+			// 执行操作
+			dataDes = new String(cipher.doFinal(Base64.decode(data)), charset);
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return dataDes;
+
+	}
+
+	/**
+	 * 加密
+	 *
+	 * @param data
+	 *            待加密数据
+	 * @param key
+	 *            密钥
+	 * @return byte[] 加密数据
+	 */
+	public static String encryptString(String data, String key) {
+		return encryptString(data, key, null);
+	}
+
+	public static String encryptString(String data, String key, String charsetName) {
+		String dataDes = null;
+		try {
+			String charset = StringUtils.isBlank(charsetName) ? "UTF-8" : charsetName;
+			// 还原密钥
+			Key k = toKey(Base64.decode(key));
+			/**
+			 * 实例化 使用PKCS7Padding填充方式，按如下代码实现 Cipher.getInstance(CIPHER_ALGORITHM,"BC");
+			 */
+			Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+			// 初始化，设置为加密模式
+			cipher.init(Cipher.ENCRYPT_MODE, k);
+			// 执行操作
+			dataDes = Base64.encode(cipher.doFinal(data.getBytes(charset)));
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return dataDes;
+	}
+
+	public static void main(String[] args) {
+		String key = Base64.encode(initKey());
+		String data = encryptString(
+				"咋上的花费破案发生了的辅导辅导辅导辅导辅导辅导辅导辅导辅导费劲咖啡色的空间打发时间13212132132132123132132132132132132132132132132", key, null);
+		String rData = decryptString(data, key, null);
+		System.out.println(rData);
+
 	}
 }

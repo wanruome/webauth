@@ -3,13 +3,14 @@
  * 	@author wanruome
  * 	@create 2018年6月12日 下午3:27:04
  */
-package com.newpay.webauth.dal.request;
+package com.newpay.webauth.dal.request.keypair;
 
 import lombok.Data;
 
 @Data
 public class UuidKeyPairReqDto {
 	private String uuid;
-	private String loginId;
+	private String keyType;
+	private String rasPublicKey;
 
 }

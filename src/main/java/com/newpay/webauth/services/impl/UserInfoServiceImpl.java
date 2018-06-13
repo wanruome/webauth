@@ -14,17 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.newpay.webauth.dal.mapper.LoginUserInfoMapper;
 import com.newpay.webauth.dal.model.LoginUserInfo;
-import com.newpay.webauth.dal.request.LoginUserReqDto;
+import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.DbSeqService;
-import com.newpay.webauth.services.LoginService;
+import com.newpay.webauth.services.UserInfoService;
 import com.ruomm.base.datasource.DataSource;
 import com.ruomm.base.tools.RegexUtil;
 import com.ruomm.base.tools.StringUtils;
 
 @Component
 @Service
-public class LoginServiceImpl implements LoginService {
+public class UserInfoServiceImpl implements UserInfoService {
 	@Autowired
 	DbSeqService dbSeqService;
 	@Autowired
@@ -39,56 +39,56 @@ public class LoginServiceImpl implements LoginService {
 	}
 
 	@Override
-	public Object doRegister(LoginUserReqDto loginUserReqDto) {
+	public Object doRegister(UserInfoRegisterReqDto loginUserReqDto) {
 		// TODO Auto-generated method stub
 		boolean VERIFY_IN_DB = true;
 		LoginUserInfo insertUserInfo = new LoginUserInfo();
 		// 验证手机号是否有效
-		if (!StringUtils.isBlank(loginUserReqDto.getLoginMobie())) {
-			if (!RegexUtil.doRegex(loginUserReqDto.getLoginMobie(), RegexUtil.MOBILE_NUM)) {
+		if (!StringUtils.isBlank(loginUserReqDto.getMobie())) {
+			if (!RegexUtil.doRegex(loginUserReqDto.getMobie(), RegexUtil.MOBILE_NUM)) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 			}
 			if (VERIFY_IN_DB) {
 				LoginUserInfo queryUserInfo = new LoginUserInfo();
-				queryUserInfo.setLoginMobie(loginUserReqDto.getLoginMobie());
+				queryUserInfo.setLoginMobie(loginUserReqDto.getMobie());
 				List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
 				if (null != lstResult && lstResult.size() > 0) {
 					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "手机号已经被注册了");
 				}
 			}
-			insertUserInfo.setLoginMobie(loginUserReqDto.getLoginMobie());
+			insertUserInfo.setLoginMobie(loginUserReqDto.getMobie());
 		}
 		// 验证邮箱是否有效
-		if (!StringUtils.isBlank(loginUserReqDto.getLoginEmail())) {
-			if (!RegexUtil.doRegex(loginUserReqDto.getLoginEmail(), RegexUtil.EMAILS)) {
+		if (!StringUtils.isBlank(loginUserReqDto.getEmail())) {
+			if (!RegexUtil.doRegex(loginUserReqDto.getEmail(), RegexUtil.EMAILS)) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 			}
 			if (VERIFY_IN_DB) {
 				LoginUserInfo queryUserInfo = new LoginUserInfo();
-				queryUserInfo.setLoginEmail(loginUserReqDto.getLoginEmail());
+				queryUserInfo.setLoginEmail(loginUserReqDto.getEmail());
 				List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
 				if (null != lstResult && lstResult.size() > 0) {
 					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "邮箱已经被注册了");
 				}
 			}
-			insertUserInfo.setLoginEmail(loginUserReqDto.getLoginEmail());
+			insertUserInfo.setLoginEmail(loginUserReqDto.getEmail());
 		}
 		// 验证用户名是否有效
-		if (!StringUtils.isBlank(loginUserReqDto.getLoginName())) {
-			if (!RegexUtil.doRegex(loginUserReqDto.getLoginName(), RegexUtil.APP_LOGIN_NAME)) {
+		if (!StringUtils.isBlank(loginUserReqDto.getName())) {
+			if (!RegexUtil.doRegex(loginUserReqDto.getName(), RegexUtil.APP_LOGIN_NAME)) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 			}
 			if (VERIFY_IN_DB) {
 				LoginUserInfo queryUserInfo = new LoginUserInfo();
-				queryUserInfo.setLoginName(loginUserReqDto.getLoginName());
+				queryUserInfo.setLoginName(loginUserReqDto.getName());
 				List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
 				if (null != lstResult && lstResult.size() > 0) {
 					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户名已经被注册了");
 				}
 			}
-			insertUserInfo.setLoginName(loginUserReqDto.getLoginName());
+			insertUserInfo.setLoginName(loginUserReqDto.getName());
 		}
-		insertUserInfo.setLoginPwd(loginUserReqDto.getLoginPwd());
+		insertUserInfo.setLoginPwd(loginUserReqDto.getPwd());
 		// 插入记录
 		insertUserInfo.setLoginId(dbSeqService.getLoginUserNewPK());
 		insertUserInfo.setVersion(1);

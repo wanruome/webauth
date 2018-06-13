@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.newpay.webauth.dal.request.UuidKeyPairReqDto;
+import com.newpay.webauth.dal.request.keypair.UuidKeyPairReqDto;
 import com.newpay.webauth.services.UuidKeyPairService;
 
 import io.swagger.annotations.ApiOperation;
