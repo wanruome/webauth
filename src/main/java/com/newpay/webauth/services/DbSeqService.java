@@ -6,5 +6,5 @@
 package com.newpay.webauth.services;
 
 public interface DbSeqService {
-	public Long getLoginUserNewPK();
+	public String getLoginUserNewPK();
 }

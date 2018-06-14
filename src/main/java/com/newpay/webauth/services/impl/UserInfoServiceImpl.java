@@ -113,7 +113,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Override
 	public Object doModifyPwd(UserInfoModifyPwd userInfoModifyPwd) {
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(Long.valueOf(userInfoModifyPwd.getUserId()));
+		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyPwd.getUserId());
 		if (null == dbLoginUserInfo) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
@@ -144,7 +144,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "手机号已经被注册了");
 			}
 		}
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(Long.valueOf(userInfoModifyMobie.getUserId()));
+		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyMobie.getUserId());
 		if (null == dbLoginUserInfo) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
@@ -173,7 +173,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "邮箱已经被注册了");
 			}
 		}
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(Long.valueOf(userInfoModifyEmail.getUserId()));
+		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyEmail.getUserId());
 		if (null == dbLoginUserInfo) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
@@ -202,7 +202,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户名已经被注册了");
 			}
 		}
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(Long.valueOf(userInfoModifyName.getUserId()));
+		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyName.getUserId());
 		if (null == dbLoginUserInfo) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
@@ -220,7 +220,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 	}
 
-	public LoginUserInfo queryLoginUserInfo(long userId) {
+	public LoginUserInfo queryLoginUserInfo(String userId) {
 		LoginUserInfo queryUserInfo = new LoginUserInfo();
 		queryUserInfo.setLoginId(userId);
 

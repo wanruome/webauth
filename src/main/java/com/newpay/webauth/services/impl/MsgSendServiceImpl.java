@@ -42,10 +42,7 @@ public class MsgSendServiceImpl implements MsgSendService {
 		if (!isEmail && !isMobile) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-		if (msgFunctionInfo.getMsgFunction() == 0) {
-
-		}
-		if (msgFunctionInfo.getMsgNeedLogin() == 1 || msgFunctionInfo.getMsgNeedLogin() == 2) {
+		if (msgFunctionInfo.getMsgAuthType() == 1 || msgFunctionInfo.getMsgAuthType() == 2) {
 			if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getToken())) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_TOKEN_MISS);
 			}
@@ -53,8 +50,8 @@ public class MsgSendServiceImpl implements MsgSendService {
 		String msgCode = MsgFunctionConfig.generateVerifyCode();
 		String msgContent = MsgFunctionConfig.generateVerifyContent(msgFunctionInfo, msgCode, isMobile, isEmail);
 		MsgSendInfo msgSendInfo = new MsgSendInfo();
-		msgSendInfo.setMsgId(new Random().nextInt(1000));
-		msgSendInfo.setUserId(Integer.valueOf(msgSendReqDto.getUserId()));
+		msgSendInfo.setMsgId(new Random().nextInt(1000) + "");
+		msgSendInfo.setUserId(msgSendReqDto.getUserId());
 		msgSendInfo.setMsgType(isMobile ? 1 : 2);
 		msgSendInfo.setMsgToken("66778899");
 		msgSendInfo.setMsgFunction(msgFunctionInfo.getMsgFunction());

@@ -16,7 +16,7 @@ import lombok.Data;
 public class LoginUserInfo {
 	@Id
 	@Column(name = "LOGIN_ID")
-	private Long loginId;
+	private String loginId;
 	@Column(name = "LOGIN_NAME")
 	private String loginName;
 	@Column(name = "LOGIN_MOBILE")

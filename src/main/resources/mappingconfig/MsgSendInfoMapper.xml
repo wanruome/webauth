@@ -3,8 +3,8 @@
 <mapper namespace="com.newpay.webauth.dal.mapper.MsgSendInfoMapper">
 
 	<resultMap id="baseResultMap" type="com.newpay.webauth.dal.model.MsgSendInfo">
-			<result property="msgId" column="MSG_ID" jdbcType="NUMERIC"/>
-			<result property="userId" column="USER_ID" jdbcType="NUMERIC"/>
+			<result property="msgId" column="MSG_ID" jdbcType="VARCHAR"/>
+			<result property="userId" column="USER_ID" jdbcType="VARCHAR"/>
 			<result property="msgType" column="MSG_TYPE" jdbcType="NUMERIC"/>
 			<result property="msgToken" column="MSG_TOKEN" jdbcType="VARCHAR"/>
 			<result property="msgFunction" column="MSG_FUNCTION" jdbcType="VARCHAR"/>

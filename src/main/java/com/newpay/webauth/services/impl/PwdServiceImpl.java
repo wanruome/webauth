@@ -30,7 +30,9 @@ public class PwdServiceImpl implements PwdService {
 	UuidKeyPairMapper uuidKeyPairMapper;
 
 	private boolean isEncryptTypeOk(String pwdEncrypt) {
-
+		if (StringUtils.isEmpty(AppConfig.UserPwdEncryptMethod)) {
+			return false;
+		}
 		return AppConfig.UserPwdEncryptMethod.contains("|" + pwdEncrypt + "|");
 	}
 

@@ -16,13 +16,14 @@ import lombok.Data;
 public class MsgFunctionInfo {
 	@Id
 	@Column(name = "MSG_FUNCTION")
-	private Integer msgFunction;
-	@Column(name = "MSG_NEED_LOGIN")
-	private Integer msgNeedLogin;
+	private String msgFunction;
+	@Column(name = "MSG_AUTH_TYPE")
+	private Integer msgAuthType;
 	@Column(name = "MSG_MAPPING")
 	private String msgMapping;
 	@Column(name = "MSG_TEMPLATE")
 	private String msgTemplate;
 	@Column(name = "STATUS")
 	private Integer status;
+
 }

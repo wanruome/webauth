@@ -24,15 +24,15 @@ public class DbSeqServiceImpl implements DbSeqService {
 	private String dbType;
 
 	@Override
-	public Long getLoginUserNewPK() {
+	public String getLoginUserNewPK() {
 
 		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
 			System.out.println("数据库类型1：" + dbType);
-			return getSeqByNameLong("tbl_login_user_new_pk", 100000);
+			return getSeqByNameLong("tbl_login_user_new_pk", 100000) + "";
 		}
 		else {
 			System.out.println("数据库类型2：" + dbType);
-			return dbSequenceMapper.getLoginUserNewPK();
+			return dbSequenceMapper.getLoginUserNewPK() + "";
 		}
 	}
 

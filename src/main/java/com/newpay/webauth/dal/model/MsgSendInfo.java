@@ -16,15 +16,15 @@ import lombok.Data;
 public class MsgSendInfo {
 	@Id
 	@Column(name = "MSG_ID")
-	private Integer msgId;
+	private String msgId;
 	@Column(name = "USER_ID")
-	private Integer userId;
+	private String userId;
 	@Column(name = "MSG_TYPE")
 	private Integer msgType;
 	@Column(name = "MSG_TOKEN")
 	private String msgToken;
 	@Column(name = "MSG_FUNCTION")
-	private Integer msgFunction;
+	private String msgFunction;
 	@Column(name = "MSG_ADDR")
 	private String msgAddr;
 	@Column(name = "MSG_CODE")
