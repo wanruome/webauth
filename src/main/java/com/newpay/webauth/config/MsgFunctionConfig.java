@@ -41,6 +41,15 @@ public class MsgFunctionConfig {
 		}
 	}
 
+	public static String generateVerifyToken() {
+		StringBuilder sb = new StringBuilder();
+		Random random = new Random();
+		for (int i = 0; i < AppConfig.VerfiyCodeLength; i++) {
+			sb.append(random.nextInt(10));
+		}
+		return sb.toString();
+	}
+
 	public static String generateVerifyCode() {
 		StringBuilder sb = new StringBuilder();
 		Random random = new Random();
@@ -57,7 +66,7 @@ public class MsgFunctionConfig {
 		String msgTypeNormal = isEmail ? "通过邮箱" : "通过手机";
 		String msgTypeEmail = isEmail ? "通过邮箱" : "";
 		String msgTypeMobile = isMobile ? "通过手机" : "";
-		String msgFunctionName = msgFunctionInfo.getMsgMapping();
+		String msgFunctionName = msgFunctionInfo.getMapping();
 
 		// String msgTemplate = new String(msgFunctionInfo.getMsgTemplate());
 		// msgTemplate = msgTemplate.replaceAll("{msgCode}", code);
@@ -68,7 +77,7 @@ public class MsgFunctionConfig {
 		// msgTemplate = msgTemplate.replaceAll("{msgTypeEmail}", msgTypeEmail);
 		// msgTemplate = msgTemplate.replaceAll("{msgFunction}", msgFunctionName);
 		// return msgTemplate;
-		String msgTemplate = new String(msgFunctionInfo.getMsgTemplate()).replaceAll("\\{msgCode\\}", msgCode)
+		String msgTemplate = new String(msgFunctionInfo.getTemplate()).replaceAll("\\{msgCode\\}", msgCode)
 				.replaceAll("\\{msgValidTime\\}", verifyTime).replaceAll("\\{appName\\}", appName)
 				.replaceAll("\\{msgType\\}", msgTypeNormal).replaceAll("\\{msgTypeMobile\\}", msgTypeMobile)
 				.replaceAll("\\{msgTypeEmail\\}", msgTypeEmail).replaceAll("\\{msgFunction\\}", msgFunctionName);

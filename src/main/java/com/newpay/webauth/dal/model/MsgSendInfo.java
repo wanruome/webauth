@@ -19,12 +19,13 @@ public class MsgSendInfo {
 	private String msgId;
 	@Column(name = "USER_ID")
 	private String userId;
+	@Column(name = "FUNCTION_ID")
+	private String functionId;
 	@Column(name = "MSG_TYPE")
 	private Integer msgType;
 	@Column(name = "MSG_TOKEN")
 	private String msgToken;
-	@Column(name = "MSG_FUNCTION")
-	private String msgFunction;
+
 	@Column(name = "MSG_ADDR")
 	private String msgAddr;
 	@Column(name = "MSG_CODE")

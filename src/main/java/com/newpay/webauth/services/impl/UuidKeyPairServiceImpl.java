@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.abel533.entity.Example;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.mapper.UuidKeyPairMapper;
 import com.newpay.webauth.dal.model.UuidKeyPair;
@@ -69,7 +68,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			insertBean.setPublicKey(keyPair[0]);
 			insertBean.setPrivateKey(keyPair[1]);
 			insertBean.setKeyVersion(AppConfig.SDF_DB_VERSION.format(new Date()));
-			insertBean.setVersion(AppConfig.getUpdateVersion(0));
+			insertBean.setVersion(1);
 			int dbResult = uuidKeyPairMapper.insert(insertBean);
 			returnKeyPair = dbResult > 0 ? insertBean : null;
 		}
@@ -94,6 +93,23 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 				returnKeyPair = resultUuidKeyPair;
 			}
 			else {
+				// UuidKeyPair updateBean = new UuidKeyPair();
+				// updateBean.setUuid(uuid);
+				// String[] keyPair = createKeyPairString(keyType);
+				// updateBean.setKeyType(keyType);
+				// updateBean.setPublicKey(keyPair[0]);
+				// updateBean.setPrivateKey(keyPair[1]);
+				// updateBean.setKeyVersion(AppConfig.SDF_DB_VERSION.format(new Date()));
+				// updateBean.setVersion(AppConfig.getUpdateVersion(resultUuidKeyPair.getVersion()));
+				// // 创建Example
+				// Example example = new Example(UuidKeyPair.class);
+				// // 创建Criteria
+				// Example.Criteria criteria = example.createCriteria();
+				// // 添加条件
+				// criteria.andEqualTo("uuid", resultUuidKeyPair.getUuid());
+				// criteria.andEqualTo("keyType", resultUuidKeyPair.getKeyType());
+				// criteria.andEqualTo("version", resultUuidKeyPair.getVersion());
+
 				UuidKeyPair updateBean = new UuidKeyPair();
 				updateBean.setUuid(uuid);
 				String[] keyPair = createKeyPairString(keyType);
@@ -101,19 +117,9 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 				updateBean.setPublicKey(keyPair[0]);
 				updateBean.setPrivateKey(keyPair[1]);
 				updateBean.setKeyVersion(AppConfig.SDF_DB_VERSION.format(new Date()));
-				updateBean.setVersion(AppConfig.getUpdateVersion(resultUuidKeyPair.getVersion()));
-				// 创建Example
-				Example example = new Example(UuidKeyPair.class);
-				// 创建Criteria
-				Example.Criteria criteria = example.createCriteria();
-				// 添加条件
-				criteria.andEqualTo("uuid", resultUuidKeyPair.getUuid());
-				criteria.andEqualTo("keyType", resultUuidKeyPair.getKeyType());
-				criteria.andEqualTo("version", resultUuidKeyPair.getVersion());
-
-				int dbResult = uuidKeyPairMapper.updateByExample(updateBean, example);
+				updateBean.setVersion(resultUuidKeyPair.getVersion());
+				int dbResult = uuidKeyPairMapper.updateByPrimaryKey(updateBean);
 				returnKeyPair = dbResult > 0 ? updateBean : null;
-
 			}
 		}
 		if (null == returnKeyPair) {

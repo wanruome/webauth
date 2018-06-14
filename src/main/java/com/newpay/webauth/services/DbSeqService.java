@@ -7,4 +7,6 @@ package com.newpay.webauth.services;
 
 public interface DbSeqService {
 	public String getLoginUserNewPK();
+
+	public String getMsgInfoNewPk();
 }

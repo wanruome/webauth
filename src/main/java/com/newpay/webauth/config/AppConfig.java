@@ -75,17 +75,17 @@ public class AppConfig {
 	public static String PWD_ERROR_PARSE = "密码解析有误，请求参数错误";
 	public static String PWD_ERROT_RULE = "密码不符合复杂性要求";
 
-	public static int getUpdateVersion(int version) {
-		if (version <= 0) {
-			return 5;
-		}
-
-		if (version % 5 == 0) {
-			return version + 5;
-		}
-		else {
-			return version - version % 5 + 5;
-		}
-	}
+	// public static int getUpdateVersion(int version) {
+	// if (version <= 0) {
+	// return 5;
+	// }
+	//
+	// if (version % 5 == 0) {
+	// return version + 5;
+	// }
+	// else {
+	// return version - version % 5 + 5;
+	// }
+	// }
 
 }

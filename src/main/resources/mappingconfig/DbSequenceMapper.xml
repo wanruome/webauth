@@ -11,6 +11,11 @@
 			select SEQ_LOGIN_USER_NEW_PK.Nextval from dual
 		]]>
 	</select>
+	<select id="getSeqNextval" resultType="LONG">
+		<![CDATA[
+			select #{seqName}.Nextval from dual
+		]]>
+	</select>
 	
 </mapper>
 

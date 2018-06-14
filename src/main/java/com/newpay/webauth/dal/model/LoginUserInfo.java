@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.Data;
+import tk.mybatis.mapper.annotation.Version;
 
 @Data
 @Table(name = "TBL_LOGIN_USER")
@@ -27,6 +28,7 @@ public class LoginUserInfo {
 	private String loginPwd;
 	@Column(name = "STATUS")
 	private Integer status;
+	@Version
 	@Column(name = "VERSION")
 	private Integer version;
 }

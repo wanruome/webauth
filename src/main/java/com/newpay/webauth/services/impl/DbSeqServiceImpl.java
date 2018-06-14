@@ -28,7 +28,7 @@ public class DbSeqServiceImpl implements DbSeqService {
 
 		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
 			System.out.println("数据库类型1：" + dbType);
-			return getSeqByNameLong("tbl_login_user_new_pk", 100000) + "";
+			return getSeqByName("SEQ_LOGIN_USER_NEW_PK", 100000) + "";
 		}
 		else {
 			System.out.println("数据库类型2：" + dbType);
@@ -36,10 +36,25 @@ public class DbSeqServiceImpl implements DbSeqService {
 		}
 	}
 
-	public Long getSeqByNameLong(String name, int insertValue) {
+	@Override
+	public String getMsgInfoNewPk() {
 		// TODO Auto-generated method stub
-		int resultValue = getSeqByName(name, insertValue);
-		return resultValue > 0 ? (long) resultValue : -9999l;
+		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
+			return getSeqByName("SEQ_LOGIN_USER_NEW_PK", 100000) + "";
+		}
+		else {
+			return dbSequenceMapper.getSeqNextval("SEQ_LOGIN_USER_NEW_PK") + "";
+		}
+	}
+
+	// public Long getSeqByNameLong(String name, int insertValue) {
+	// // TODO Auto-generated method stub
+	// int resultValue = getSeqByName(name, insertValue);
+	// return resultValue > 0 ? (long) resultValue : -9999l;
+	// }
+
+	public long getSeqByNameOrcale(String name) {
+		return dbSequenceMapper.getSeqNextval(name);
 	}
 
 	public int getSeqByName(String name, int insertValue) {

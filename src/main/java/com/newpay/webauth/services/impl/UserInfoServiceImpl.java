@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.abel533.entity.Example;
-import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.mapper.LoginUserInfoMapper;
 import com.newpay.webauth.dal.model.LoginUserInfo;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
@@ -228,18 +226,26 @@ public class UserInfoServiceImpl implements UserInfoService {
 	}
 
 	public boolean updateLoginUserInfo(LoginUserInfo dbLoginUserInfo, LoginUserInfo updateUserInfo) {
-		updateUserInfo.setLoginId(dbLoginUserInfo.getLoginId());
-		updateUserInfo.setVersion(AppConfig.getUpdateVersion(dbLoginUserInfo.getVersion()));
-		// 创建Example
-		Example example = new Example(LoginUserInfo.class);
-		// 创建Criteria
-		Example.Criteria criteria = example.createCriteria();
-		// 添加条件
-		criteria.andEqualTo("loginId", dbLoginUserInfo.getLoginId());
-		criteria.andEqualTo("version", dbLoginUserInfo.getVersion());
-
-		int dbResult = loginUserInfoMapper.updateByExampleSelective(updateUserInfo, example);
+		updateUserInfo.setVersion(dbLoginUserInfo.getVersion());
+		int dbResult = loginUserInfoMapper.updateByPrimaryKeySelective(updateUserInfo);
 		return dbResult > 0 ? true : false;
 	}
+	// public boolean updateLoginUserInfo(LoginUserInfo dbLoginUserInfo, LoginUserInfo
+	// updateUserInfo) {
+	// // updateUserInfo.setLoginId(dbLoginUserInfo.getLoginId());
+	// // updateUserInfo.setVersion(AppConfig.getUpdateVersion(dbLoginUserInfo.getVersion()));
+	// // // 创建Example
+	// // Example example = new Example(LoginUserInfo.class);
+	// // // 创建Criteria
+	// // Example.Criteria criteria = example.createCriteria();
+	// // // 添加条件
+	// // criteria.andEqualTo("loginId", dbLoginUserInfo.getLoginId());
+	// // criteria.andEqualTo("version", dbLoginUserInfo.getVersion());
+	// //
+	// // int dbResult = loginUserInfoMapper.updateByExampleSelective(updateUserInfo, example);
+	// // return dbResult > 0 ? true : false;
+	// int dbResult = loginUserInfoMapper.updateByPrimaryKey(updateUserInfo);
+	// return dbResult > 0 ? true : false;
+	// }
 
 }

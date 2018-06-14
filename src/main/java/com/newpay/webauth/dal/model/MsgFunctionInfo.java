@@ -15,14 +15,16 @@ import lombok.Data;
 @Table(name = "TBL_MSG_FUNTION_INFO")
 public class MsgFunctionInfo {
 	@Id
-	@Column(name = "MSG_FUNCTION")
-	private String msgFunction;
-	@Column(name = "MSG_AUTH_TYPE")
-	private Integer msgAuthType;
-	@Column(name = "MSG_MAPPING")
-	private String msgMapping;
-	@Column(name = "MSG_TEMPLATE")
-	private String msgTemplate;
+	@Column(name = "FUNCTION_ID")
+	private String functionId;
+	@Column(name = "FUNCTION_NAME")
+	private String functionName;
+	@Column(name = "AUTH_TYPE")
+	private Integer authType;
+	@Column(name = "MAPPING")
+	private String mapping;
+	@Column(name = "TEMPLATE")
+	private String template;
 	@Column(name = "STATUS")
 	private Integer status;
 

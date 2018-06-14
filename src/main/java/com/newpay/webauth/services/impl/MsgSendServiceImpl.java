@@ -6,29 +6,34 @@
 package com.newpay.webauth.services.impl;
 
 import java.util.Date;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.config.MsgFunctionConfig;
+import com.newpay.webauth.dal.mapper.MsgAuthInfoMapper;
 import com.newpay.webauth.dal.mapper.MsgSendInfoMapper;
+import com.newpay.webauth.dal.model.MsgAuthInfo;
 import com.newpay.webauth.dal.model.MsgFunctionInfo;
 import com.newpay.webauth.dal.model.MsgSendInfo;
 import com.newpay.webauth.dal.request.functionmsg.MsgSendReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.MsgSendService;
 import com.ruomm.base.tools.RegexUtil;
 import com.ruomm.base.tools.StringUtils;
 import com.ruomm.base.tools.TimeUtils;
+import com.ruomm.base.tools.TokenUtil;
 
 @Service
 public class MsgSendServiceImpl implements MsgSendService {
 	@Autowired
-	MsgSendInfoMapper msgFuntionInfoMapper;
-	@Autowired
 	MsgSendInfoMapper msgSendInfoMapper;
+	@Autowired
+	MsgAuthInfoMapper msgAuthInfoMapper;
+	@Autowired
+	DbSeqService dbSeqService;
 
 	@Override
 	public Object doSendMsg(MsgSendReqDto msgSendReqDto) {
@@ -42,34 +47,76 @@ public class MsgSendServiceImpl implements MsgSendService {
 		if (!isEmail && !isMobile) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-		if (msgFunctionInfo.getMsgAuthType() == 1 || msgFunctionInfo.getMsgAuthType() == 2) {
+		if (msgFunctionInfo.getAuthType() == 1 || msgFunctionInfo.getAuthType() == 2) {
 			if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getToken())) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_TOKEN_MISS);
 			}
 		}
+		// 写入记录表
+		String msgId = dbSeqService.getMsgInfoNewPk();
+		String userId = msgSendReqDto.getUserId();
+		String functionId = msgFunctionInfo.getFunctionId();
+		int msgType = isMobile ? 1 : 2;
 		String msgCode = MsgFunctionConfig.generateVerifyCode();
+		String msgToken = TokenUtil.generateVerifyToken();
 		String msgContent = MsgFunctionConfig.generateVerifyContent(msgFunctionInfo, msgCode, isMobile, isEmail);
+		String msgAddr = msgSendReqDto.getMsgAddr();
+		Date nowDate = new Date();
+		String msgValidTime = TimeUtils.formatTime(nowDate.getTime() + AppConfig.VerfiyCodeValidTime,
+				AppConfig.SDF_DB_VERSION);
+		String createDate = AppConfig.SDF_DB_DATE.format(nowDate);
+		String createTime = AppConfig.SDF_DB_VERSION.format(nowDate);
 		MsgSendInfo msgSendInfo = new MsgSendInfo();
-		msgSendInfo.setMsgId(new Random().nextInt(1000) + "");
-		msgSendInfo.setUserId(msgSendReqDto.getUserId());
-		msgSendInfo.setMsgType(isMobile ? 1 : 2);
-		msgSendInfo.setMsgToken("66778899");
-		msgSendInfo.setMsgFunction(msgFunctionInfo.getMsgFunction());
-		msgSendInfo.setMsgAddr(msgSendReqDto.getMsgAddr());
+		msgSendInfo.setMsgId(msgId);
+		msgSendInfo.setUserId(userId);
+		msgSendInfo.setFunctionId(functionId);
+		msgSendInfo.setMsgType(msgType);
+		msgSendInfo.setMsgToken(msgToken);
+		msgSendInfo.setMsgAddr(msgAddr);
 		msgSendInfo.setMsgCode(msgCode);
 		msgSendInfo.setMsgStatus(0);
 		msgSendInfo.setMsgContent(msgContent);
-		Date nowDate = new Date();
-		msgSendInfo.setMsgValidTime(
-				TimeUtils.formatTime(nowDate.getTime() + AppConfig.VerfiyCodeValidTime, AppConfig.SDF_DB_VERSION));
-		msgSendInfo.setCreateDate(AppConfig.SDF_DB_DATE.format(nowDate));
-		msgSendInfo.setCreateTime(AppConfig.SDF_DB_VERSION.format(nowDate));
-		int dbResult = msgSendInfoMapper.insert(msgSendInfo);
-		if (dbResult > 0) {
-			return BaseReturn.toSUCESS(null);
+		msgSendInfo.setMsgValidTime(msgValidTime);
+		msgSendInfo.setCreateDate(createDate);
+		msgSendInfo.setCreateTime(createTime);
+		int dbResult = msgSendInfoMapper.insertSelective(msgSendInfo);
+		if (dbResult <= 0) {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_DB);
+		}
+
+		MsgAuthInfo msgAuthInfo = new MsgAuthInfo();
+		msgAuthInfo.setUuid(msgSendReqDto.getUuid());
+		msgAuthInfo.setMsgAddr(msgAddr);
+		msgAuthInfo.setFunctionId(functionId);
+		msgAuthInfo.setSessionToken(msgSendReqDto.getToken());
+		msgAuthInfo.setMsgCode(msgCode);
+		msgAuthInfo.setMsgValidTime(msgValidTime);
+		msgAuthInfo.setMsgToken(msgToken);
+		MsgAuthInfo resultMsgAuthInfo = msgAuthInfoMapper.selectByPrimaryKey(msgAuthInfo);
+		if (null == resultMsgAuthInfo) {
+			// 写入认证表
+			// msgAuthInfo.setVersion(AppConfig.getUpdateVersion(0));
+			dbResult = msgAuthInfoMapper.insert(msgAuthInfo);
 		}
 		else {
+			msgAuthInfo.setVersion(resultMsgAuthInfo.getVersion());
+			dbResult = msgAuthInfoMapper.updateByPrimaryKey(msgAuthInfo);
+
+			// Example example = new Example(MsgAuthInfo.class);
+			// // 创建Criteria
+			// Example.Criteria criteria = example.createCriteria();
+			// // 添加条件
+			// criteria.andEqualTo("uuid", msgAuthInfo.getUuid());
+			// criteria.andEqualTo("functionId", msgAuthInfo.getFunctionId());
+			// criteria.andEqualTo("msgAddr", msgAuthInfo.getMsgAddr());
+			// criteria.andEqualTo("version", msgAuthInfo.getVersion());
+			// dbResult = msgAuthInfoMapper.updateByExample(msgAuthInfo, example);
+		}
+		if (dbResult <= 0) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_DB);
+		}
+		else {
+			return BaseReturn.toSUCESS(null);
 		}
 	}
 

@@ -29,7 +29,7 @@ public class MsgFunctionInfoServiceImpl implements MsgFunctionInfoService {
 		List<MsgFunctionInfo> lstResult = msgFunctionInfoMapper.select(queryBean);
 		Map<String, MsgFunctionInfo> mapsResult = new HashMap<String, MsgFunctionInfo>();
 		for (MsgFunctionInfo tmp : lstResult) {
-			mapsResult.put(tmp.getMsgFunction(), tmp);
+			mapsResult.put(tmp.getFunctionId(), tmp);
 		}
 		return mapsResult;
 	}
