@@ -71,9 +71,12 @@ public class AppConfig {
 	public static String PWD_ENCRYPT_RSAMD5 = "RSAMD5";
 	public static String PWD_ENCRYPT_3DES = "3DES";
 	public static String PWD_ENCRYPT_3DESMD5 = "3DESMD5";
+	public static String ACCOUNT_TYPE_MOBILE = "1";
+	public static String ACCOUNT_TYPE_EMAIL = "2";
+	public static String ACCOUNT_TYPE_NAME = "3";
+	public static String ACCOUNT_TYPE_USERID = "4";
 
 	public static String PWD_ERROR_PARSE = "密码解析有误，请求参数错误";
-	public static String PWD_ERROT_RULE = "密码不符合复杂性要求";
 
 	// public static int getUpdateVersion(int version) {
 	// if (version <= 0) {

@@ -12,10 +12,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.mapper.LoginUserInfoMapper;
 import com.newpay.webauth.dal.model.LoginUserInfo;
+import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyName;
@@ -24,7 +25,6 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.UserInfoService;
-import com.ruomm.base.datasource.DataSource;
 import com.ruomm.base.tools.RegexUtil;
 import com.ruomm.base.tools.StringUtils;
 
@@ -37,12 +37,37 @@ public class UserInfoServiceImpl implements UserInfoService {
 	LoginUserInfoMapper loginUserInfoMapper;
 	boolean VERIFY_IN_DB = true;
 
-	@DataSource("mysql")
-	@Transactional(rollbackFor = Exception.class)
-
 	@Override
-	public String doLogin() {
-		return dbSeqService.getLoginUserNewPK() + "";
+	public Object doLogin(UserInfoLoginReqDto userInfoLoginReqDto) {
+		LoginUserInfo queryUserInfo = new LoginUserInfo();
+		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserInfo.setLoginMobie(userInfoLoginReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_EMAIL.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserInfo.setLoginEmail(userInfoLoginReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_NAME.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserInfo.setLoginName(userInfoLoginReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_USERID.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserInfo.setLoginId(userInfoLoginReqDto.getAccount());
+		}
+		else {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		}
+		LoginUserInfo resultLoginUserInfo = loginUserInfoMapper.selectOne(queryUserInfo);
+		if (null == resultLoginUserInfo) {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
+		}
+		else if (!resultLoginUserInfo.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "密码错误");
+		}
+		// String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
+		// UsernamePasswordToken shiroToken = new
+		// UsernamePasswordToken(resultLoginUserInfo.getLoginId(),
+		// TokenUtil.generateToken(), false);
+		// SecurityUtils.getSubject().login(shiroToken);
+		return BaseReturn.toSUCESS(BaseReturn.SUCESS_CODE, null);
 	}
 
 	@Override
@@ -51,6 +76,18 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 		LoginUserInfo insertUserInfo = new LoginUserInfo();
 		// 验证手机号是否有效
+		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(loginUserReqDto.getAccountType())) {
+			loginUserReqDto.setMobie(loginUserReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_EMAIL.equals(loginUserReqDto.getAccountType())) {
+			loginUserReqDto.setEmail(loginUserReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_NAME.equals(loginUserReqDto.getAccountType())) {
+			loginUserReqDto.setName(loginUserReqDto.getAccount());
+		}
+		else {
+			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+		}
 		if (!StringUtils.isBlank(loginUserReqDto.getMobie())) {
 			if (!RegexUtil.doRegex(loginUserReqDto.getMobie(), RegexUtil.MOBILE_NUM)) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
