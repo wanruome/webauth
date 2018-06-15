@@ -40,16 +40,16 @@ public class MsgSendServiceImpl implements MsgSendService {
 		// TODO Auto-generated method stub
 		MsgFunctionInfo msgFunctionInfo = MsgFunctionConfig.getMsgFuntionInfo(msgSendReqDto.getMsgFunction());
 		if (null == msgFunctionInfo) {
-			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
+			return ResultFactory.toNackPARAM();
 		}
 		boolean isEmail = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.EMAILS);
 		boolean isMobile = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.MOBILE_NUM);
 		if (!isEmail && !isMobile) {
-			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
+			return ResultFactory.toNackPARAM();
 		}
 		if (msgFunctionInfo.getAuthType() == 1 || msgFunctionInfo.getAuthType() == 2) {
 			if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getToken())) {
-				return ResultFactory.toNack(ResultFactory.ERR_PRARM);
+				return ResultFactory.toNackPARAM();
 			}
 		}
 		// 写入记录表
@@ -81,7 +81,7 @@ public class MsgSendServiceImpl implements MsgSendService {
 		msgSendInfo.setCreateTime(createTime);
 		int dbResult = msgSendInfoMapper.insertSelective(msgSendInfo);
 		if (dbResult <= 0) {
-			return ResultFactory.toNack(ResultFactory.ERR_DB);
+			return ResultFactory.toNackDB();
 		}
 
 		MsgAuthInfo msgAuthInfo = new MsgAuthInfo();
@@ -113,7 +113,7 @@ public class MsgSendServiceImpl implements MsgSendService {
 			// dbResult = msgAuthInfoMapper.updateByExample(msgAuthInfo, example);
 		}
 		if (dbResult <= 0) {
-			return ResultFactory.toNack(ResultFactory.ERR_DB);
+			return ResultFactory.toNackDB();
 		}
 		else {
 			return ResultFactory.toAck(null);

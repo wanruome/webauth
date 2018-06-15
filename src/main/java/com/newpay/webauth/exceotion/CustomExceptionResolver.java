@@ -18,7 +18,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.dal.response.ResultFactory;
 
 public class CustomExceptionResolver implements HandlerExceptionResolver {
-	private static String ERR_UNKNOWN = "e499";
 
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler,
@@ -29,7 +28,7 @@ public class CustomExceptionResolver implements HandlerExceptionResolver {
 		// 解析JSON请求
 		if (null != contentType && contentType.toLowerCase().contains("application/json")) {
 
-			JSONObject baseResponse = ResultFactory.toNack(ERR_UNKNOWN);
+			JSONObject baseResponse = ResultFactory.toNack(ResultFactory.ERR_UNKNOWN, null);
 			Writer writer = null;
 			try {
 				writer = response.getWriter();

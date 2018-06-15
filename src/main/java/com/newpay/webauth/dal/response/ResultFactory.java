@@ -10,16 +10,36 @@ import com.alibaba.fastjson.JSONObject;
 import com.ruomm.base.tools.StringUtils;
 
 public class ResultFactory {
-	public static String ERR_PRARM = "e401";
-	public static String ERR_CORE = "e402";
-	public static String ERR_DB = "e403";
-	private static String ERR_UNKNOWN = "e499";
+	private static String ERR_PRARM = "e401";
+	private static String ERR_CORE = "e402";
+	private static String ERR_DB = "e403";
+	public static String ERR_UNKNOWN = "e499";
 	// public static String ERROR_TOKEN_MISS = "e001";
 	// public static String ERROR_TOKEN_INVALID = "e000";
-	public static String SUCESS_CODE = "0000";
+	private static String SUCESS_CODE = "0000";
 
-	public static JSONObject toNack(String code) {
-		return createResponse(code, null, null, false);
+	public static JSONObject toNackPARAM() {
+		return createResponse(ERR_PRARM, null, null, false);
+	}
+
+	public static JSONObject toNackPARAM(String msg) {
+		return createResponse(ERR_PRARM, msg, null, false);
+	}
+
+	public static JSONObject toNackCORE() {
+		return createResponse(ERR_CORE, null, null, false);
+	}
+
+	public static JSONObject toNackCORE(String msg) {
+		return createResponse(ERR_CORE, msg, null, false);
+	}
+
+	public static JSONObject toNackDB() {
+		return createResponse(ERR_DB, null, null, false);
+	}
+
+	public static JSONObject toNackDB(String msg) {
+		return createResponse(ERR_DB, msg, null, false);
 	}
 
 	public static JSONObject toNack(String code, String msg) {

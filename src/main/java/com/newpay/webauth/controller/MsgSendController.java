@@ -32,7 +32,7 @@ public class MsgSendController {
 	@PostMapping("/doMsgSend")
 	public Object doMsgSend(@Valid @RequestBody MsgSendReqDto msgSendReqDto, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
+			return ResultFactory.toNackPARAM();
 		}
 
 		return functionMsgService.doSendMsg(msgSendReqDto);

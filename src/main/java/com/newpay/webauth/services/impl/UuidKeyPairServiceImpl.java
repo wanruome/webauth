@@ -32,7 +32,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 	@Override
 	public Object getPublicKeyByUuid(UuidKeyPairReqDto uuidKeyPairReqDto) {
 		if (StringUtils.isBlank(uuidKeyPairReqDto.getUuid())) {
-			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
+			return ResultFactory.toNackPARAM();
 		}
 		// if (StringUtils.getLength(uuidKeyPairReqDto.getUuid()) < 32) {
 		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
@@ -52,7 +52,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			keyType = AppConfig.PWD_ENCRYPT_3DES;
 		}
 		else {
-			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
+			return ResultFactory.toNackPARAM();
 		}
 		UuidKeyPair queryUuidKeyPair = new UuidKeyPair();
 		queryUuidKeyPair.setUuid(uuid);
@@ -123,7 +123,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			}
 		}
 		if (null == returnKeyPair) {
-			return ResultFactory.toNack(ResultFactory.ERR_DB);
+			return ResultFactory.toNackDB();
 		}
 		else {
 			// 加入传输安全选项
@@ -137,7 +137,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 				tmpString = returnKeyPair.getPublicKey();
 			}
 			if (StringUtils.isBlank(tmpString)) {
-				return ResultFactory.toNack(ResultFactory.ERR_DB);
+				return ResultFactory.toNackDB();
 			}
 
 			JSONObject jsonObject = new JSONObject();
