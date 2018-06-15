@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.newpay.webauth.config.AppConfig;
-import com.newpay.webauth.dal.mapper.LoginUserInfoMapper;
-import com.newpay.webauth.dal.model.LoginUserInfo;
+import com.newpay.webauth.dal.mapper.LoginUserAccountMapper;
+import com.newpay.webauth.dal.model.LoginUserAccount;
 import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
@@ -38,36 +38,36 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Autowired
 	DbSeqService dbSeqService;
 	@Autowired
-	LoginUserInfoMapper loginUserInfoMapper;
+	LoginUserAccountMapper loginUserAccountMapper;
 	boolean VERIFY_IN_DB = true;
 
 	@Override
 	public Object doLogin(UserInfoLoginReqDto userInfoLoginReqDto) {
-		LoginUserInfo queryUserInfo = new LoginUserInfo();
+		LoginUserAccount queryUserAccount = new LoginUserAccount();
 		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserInfo.setLoginMobie(userInfoLoginReqDto.getAccount());
+			queryUserAccount.setLoginMobie(userInfoLoginReqDto.getAccount());
 		}
 		else if (AppConfig.ACCOUNT_TYPE_EMAIL.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserInfo.setLoginEmail(userInfoLoginReqDto.getAccount());
+			queryUserAccount.setLoginEmail(userInfoLoginReqDto.getAccount());
 		}
 		else if (AppConfig.ACCOUNT_TYPE_NAME.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserInfo.setLoginName(userInfoLoginReqDto.getAccount());
+			queryUserAccount.setLoginName(userInfoLoginReqDto.getAccount());
 		}
 		else if (AppConfig.ACCOUNT_TYPE_USERID.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserInfo.setLoginId(userInfoLoginReqDto.getAccount());
+			queryUserAccount.setLoginId(userInfoLoginReqDto.getAccount());
 		}
 		else {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-		LoginUserInfo resultLoginUserInfo = loginUserInfoMapper.selectOne(queryUserInfo);
-		if (null == resultLoginUserInfo) {
+		LoginUserAccount resultLoginUserAccount = loginUserAccountMapper.selectOne(queryUserAccount);
+		if (null == resultLoginUserAccount) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
-		else if (!resultLoginUserInfo.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
+		else if (!resultLoginUserAccount.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "密码错误");
 		}
 		String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
-		UsernamePasswordToken shiroToken = new UsernamePasswordToken(resultLoginUserInfo.getLoginId(),
+		UsernamePasswordToken shiroToken = new UsernamePasswordToken(resultLoginUserAccount.getLoginId(),
 				TokenUtil.generateToken(), false);
 		SecurityUtils.getSubject().login(shiroToken);
 		return BaseReturn.toSUCESS(BaseReturn.SUCESS_CODE, null);
@@ -77,7 +77,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	public Object doRegister(UserInfoRegisterReqDto loginUserReqDto) {
 		// TODO Auto-generated method stub
 
-		LoginUserInfo insertUserInfo = new LoginUserInfo();
+		LoginUserAccount insertUserAccount = new LoginUserAccount();
 		// 验证手机号是否有效
 		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(loginUserReqDto.getAccountType())) {
 			loginUserReqDto.setMobie(loginUserReqDto.getAccount());
@@ -96,14 +96,14 @@ public class UserInfoServiceImpl implements UserInfoService {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 			}
 			if (VERIFY_IN_DB) {
-				LoginUserInfo queryUserInfo = new LoginUserInfo();
+				LoginUserAccount queryUserInfo = new LoginUserAccount();
 				queryUserInfo.setLoginMobie(loginUserReqDto.getMobie());
-				List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
+				List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserInfo);
 				if (null != lstResult && lstResult.size() > 0) {
 					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "手机号已经被注册了");
 				}
 			}
-			insertUserInfo.setLoginMobie(loginUserReqDto.getMobie());
+			insertUserAccount.setLoginMobie(loginUserReqDto.getMobie());
 		}
 		// 验证邮箱是否有效
 		if (!StringUtils.isBlank(loginUserReqDto.getEmail())) {
@@ -111,14 +111,14 @@ public class UserInfoServiceImpl implements UserInfoService {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 			}
 			if (VERIFY_IN_DB) {
-				LoginUserInfo queryUserInfo = new LoginUserInfo();
-				queryUserInfo.setLoginEmail(loginUserReqDto.getEmail());
-				List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
+				LoginUserAccount queryUserAccount = new LoginUserAccount();
+				queryUserAccount.setLoginEmail(loginUserReqDto.getEmail());
+				List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 				if (null != lstResult && lstResult.size() > 0) {
 					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "邮箱已经被注册了");
 				}
 			}
-			insertUserInfo.setLoginEmail(loginUserReqDto.getEmail());
+			insertUserAccount.setLoginEmail(loginUserReqDto.getEmail());
 		}
 		// 验证用户名是否有效
 		if (!StringUtils.isBlank(loginUserReqDto.getName())) {
@@ -126,21 +126,21 @@ public class UserInfoServiceImpl implements UserInfoService {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 			}
 			if (VERIFY_IN_DB) {
-				LoginUserInfo queryUserInfo = new LoginUserInfo();
-				queryUserInfo.setLoginName(loginUserReqDto.getName());
-				List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
+				LoginUserAccount queryUserAccount = new LoginUserAccount();
+				queryUserAccount.setLoginName(loginUserReqDto.getName());
+				List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 				if (null != lstResult && lstResult.size() > 0) {
 					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户名已经被注册了");
 				}
 			}
-			insertUserInfo.setLoginName(loginUserReqDto.getName());
+			insertUserAccount.setLoginName(loginUserReqDto.getName());
 		}
-		insertUserInfo.setLoginPwd(loginUserReqDto.getPwd());
+		insertUserAccount.setLoginPwd(loginUserReqDto.getPwd());
 		// 插入记录
-		insertUserInfo.setLoginId(dbSeqService.getLoginUserNewPK());
-		insertUserInfo.setVersion(1);
-		insertUserInfo.setStatus(1);
-		int dbResult = loginUserInfoMapper.insertSelective(insertUserInfo);
+		insertUserAccount.setLoginId(dbSeqService.getLoginUserNewPK());
+		insertUserAccount.setVersion(1);
+		insertUserAccount.setStatus(1);
+		int dbResult = loginUserAccountMapper.insertSelective(insertUserAccount);
 		if (dbResult > 0) {
 			return BaseReturn.toSUCESS("注册成功", null);
 		}
@@ -151,19 +151,19 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Override
 	public Object doModifyPwd(UserInfoModifyPwd userInfoModifyPwd) {
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyPwd.getUserId());
-		if (null == dbLoginUserInfo) {
+		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyPwd.getUserId());
+		if (null == dbLoginUserAccount) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
-		if (!userInfoModifyPwd.getOldPwd().equals(dbLoginUserInfo.getLoginPwd())) {
+		if (!userInfoModifyPwd.getOldPwd().equals(dbLoginUserAccount.getLoginPwd())) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "旧的密码不正确");
 		}
-		LoginUserInfo updateUserInfo = new LoginUserInfo();
-		updateUserInfo.setLoginPwd(userInfoModifyPwd.getNewPwd());
-		boolean dbFlag = updateLoginUserInfo(dbLoginUserInfo, updateUserInfo);
+		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginPwd(userInfoModifyPwd.getNewPwd());
+		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
-			mapResult.put("version", updateUserInfo.getVersion() + "");
+			mapResult.put("version", updateUserAccount.getVersion() + "");
 			return BaseReturn.toSUCESS(mapResult);
 		}
 		else {
@@ -175,24 +175,24 @@ public class UserInfoServiceImpl implements UserInfoService {
 	public Object doModifyMobie(UserInfoModifyMobie userInfoModifyMobie) {
 		// TODO Auto-generated method stub
 		if (VERIFY_IN_DB) {
-			LoginUserInfo queryUserInfo = new LoginUserInfo();
-			queryUserInfo.setLoginMobie(userInfoModifyMobie.getNewMobile());
-			List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
+			LoginUserAccount queryUserAccount = new LoginUserAccount();
+			queryUserAccount.setLoginMobie(userInfoModifyMobie.getNewMobile());
+			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "手机号已经被注册了");
 			}
 		}
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyMobie.getUserId());
-		if (null == dbLoginUserInfo) {
+		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyMobie.getUserId());
+		if (null == dbLoginUserAccount) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
 		// 验证authToken是否有效
-		LoginUserInfo updateUserInfo = new LoginUserInfo();
-		updateUserInfo.setLoginMobie(userInfoModifyMobie.getNewMobile());
-		boolean dbFlag = updateLoginUserInfo(dbLoginUserInfo, updateUserInfo);
+		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginMobie(userInfoModifyMobie.getNewMobile());
+		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
-			mapResult.put("version", updateUserInfo.getVersion() + "");
+			mapResult.put("version", updateUserAccount.getVersion() + "");
 			return BaseReturn.toSUCESS(mapResult);
 		}
 		else {
@@ -204,24 +204,24 @@ public class UserInfoServiceImpl implements UserInfoService {
 	public Object doModifyEmail(UserInfoModifyEmail userInfoModifyEmail) {
 		// TODO Auto-generated method stub
 		if (VERIFY_IN_DB) {
-			LoginUserInfo queryUserInfo = new LoginUserInfo();
-			queryUserInfo.setLoginEmail(userInfoModifyEmail.getNewEmail());
-			List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
+			LoginUserAccount queryUserAccount = new LoginUserAccount();
+			queryUserAccount.setLoginEmail(userInfoModifyEmail.getNewEmail());
+			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "邮箱已经被注册了");
 			}
 		}
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyEmail.getUserId());
-		if (null == dbLoginUserInfo) {
+		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyEmail.getUserId());
+		if (null == dbLoginUserAccount) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
 		// 验证authToken是否有效
-		LoginUserInfo updateUserInfo = new LoginUserInfo();
-		updateUserInfo.setLoginEmail(userInfoModifyEmail.getNewEmail());
-		boolean dbFlag = updateLoginUserInfo(dbLoginUserInfo, updateUserInfo);
+		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginEmail(userInfoModifyEmail.getNewEmail());
+		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
-			mapResult.put("version", updateUserInfo.getVersion() + "");
+			mapResult.put("version", updateUserAccount.getVersion() + "");
 			return BaseReturn.toSUCESS(mapResult);
 		}
 		else {
@@ -233,24 +233,24 @@ public class UserInfoServiceImpl implements UserInfoService {
 	public Object doModifyName(UserInfoModifyName userInfoModifyName) {
 		// TODO Auto-generated method stub
 		if (VERIFY_IN_DB) {
-			LoginUserInfo queryUserInfo = new LoginUserInfo();
-			queryUserInfo.setLoginName(userInfoModifyName.getNewName());
-			List<LoginUserInfo> lstResult = loginUserInfoMapper.select(queryUserInfo);
+			LoginUserAccount queryUserAccount = new LoginUserAccount();
+			queryUserAccount.setLoginName(userInfoModifyName.getNewName());
+			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
 				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户名已经被注册了");
 			}
 		}
-		LoginUserInfo dbLoginUserInfo = queryLoginUserInfo(userInfoModifyName.getUserId());
-		if (null == dbLoginUserInfo) {
+		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyName.getUserId());
+		if (null == dbLoginUserAccount) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
 		}
 		// 验证authToken是否有效
-		LoginUserInfo updateUserInfo = new LoginUserInfo();
-		updateUserInfo.setLoginName(userInfoModifyName.getNewName());
-		boolean dbFlag = updateLoginUserInfo(dbLoginUserInfo, updateUserInfo);
+		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginName(userInfoModifyName.getNewName());
+		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
-			mapResult.put("version", updateUserInfo.getVersion() + "");
+			mapResult.put("version", updateUserAccount.getVersion() + "");
 			return BaseReturn.toSUCESS(mapResult);
 		}
 		else {
@@ -258,33 +258,31 @@ public class UserInfoServiceImpl implements UserInfoService {
 		}
 	}
 
-	public LoginUserInfo queryLoginUserInfo(String userId) {
-		LoginUserInfo queryUserInfo = new LoginUserInfo();
-		queryUserInfo.setLoginId(userId);
+	public LoginUserAccount queryLoginUserAccount(String userId) {
+		LoginUserAccount queryUserAccount = new LoginUserAccount();
+		queryUserAccount.setLoginId(userId);
 
-		return loginUserInfoMapper.selectByPrimaryKey(queryUserInfo);
+		return loginUserAccountMapper.selectByPrimaryKey(queryUserAccount);
 	}
 
-	public boolean updateLoginUserInfo(LoginUserInfo dbLoginUserInfo, LoginUserInfo updateUserInfo) {
-		updateUserInfo.setVersion(dbLoginUserInfo.getVersion());
-		int dbResult = loginUserInfoMapper.updateByPrimaryKeySelective(updateUserInfo);
+	public boolean updateLoginUserAccount(LoginUserAccount dbLoginUserAccount, LoginUserAccount updateUserAccount) {
+		updateUserAccount.setVersion(dbLoginUserAccount.getVersion());
+		int dbResult = loginUserAccountMapper.updateByPrimaryKeySelective(updateUserAccount);
 		return dbResult > 0 ? true : false;
 	}
-	// public boolean updateLoginUserInfo(LoginUserInfo dbLoginUserInfo, LoginUserInfo
-	// updateUserInfo) {
-	// // updateUserInfo.setLoginId(dbLoginUserInfo.getLoginId());
-	// // updateUserInfo.setVersion(AppConfig.getUpdateVersion(dbLoginUserInfo.getVersion()));
-	// // // 创建Example
-	// // Example example = new Example(LoginUserInfo.class);
-	// // // 创建Criteria
-	// // Example.Criteria criteria = example.createCriteria();
-	// // // 添加条件
-	// // criteria.andEqualTo("loginId", dbLoginUserInfo.getLoginId());
-	// // criteria.andEqualTo("version", dbLoginUserInfo.getVersion());
-	// //
-	// // int dbResult = loginUserInfoMapper.updateByExampleSelective(updateUserInfo, example);
-	// // return dbResult > 0 ? true : false;
-	// int dbResult = loginUserInfoMapper.updateByPrimaryKey(updateUserInfo);
+	// public boolean updateLoginUserInfo(LoginUserAccount dbLoginUserAccount, LoginUserAccount
+	// updateUserAccount) {
+	// updateUserAccount.setLoginId(dbLoginUserAccount.getLoginId());
+	// updateUserAccount.setVersion(AppConfig.getUpdateVersion(dbLoginUserAccount.getVersion()));
+	// // 创建Example
+	// Example example = new Example(LoginUserAccount.class);
+	// // 创建Criteria
+	// Example.Criteria criteria = example.createCriteria();
+	// // 添加条件
+	// criteria.andEqualTo("loginId", dbLoginUserAccount.getLoginId());
+	// criteria.andEqualTo("version", dbLoginUserAccount.getVersion());
+	//
+	// int dbResult = loginUserInfoMapper.updateByExampleSelective(updateUserAccount, example);
 	// return dbResult > 0 ? true : false;
 	// }
 

@@ -13,8 +13,8 @@ import lombok.Data;
 import tk.mybatis.mapper.annotation.Version;
 
 @Data
-@Table(name = "TBL_LOGIN_USER")
-public class LoginUserInfo {
+@Table(name = "TBL_LOGIN_USER_ACCOUNT")
+public class LoginUserAccount {
 	@Id
 	@Column(name = "LOGIN_ID")
 	private String loginId;

@@ -38,6 +38,9 @@ public class StatelessDefaultSubjectFactory extends DefaultWebSubjectFactory {
 				context.setSessionCreationEnabled(true);
 			}
 		}
+		else {
+
+		}
 		return super.createSubject(context);
 	}
 }
