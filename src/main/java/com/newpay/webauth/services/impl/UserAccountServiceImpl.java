@@ -26,7 +26,7 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.DbSeqService;
-import com.newpay.webauth.services.UserInfoService;
+import com.newpay.webauth.services.UserAccountService;
 import com.ruomm.base.tools.EncryptUtils;
 import com.ruomm.base.tools.RegexUtil;
 import com.ruomm.base.tools.StringUtils;
@@ -34,7 +34,7 @@ import com.ruomm.base.tools.TokenUtil;
 
 @Component
 @Service
-public class UserInfoServiceImpl implements UserInfoService {
+public class UserAccountServiceImpl implements UserAccountService {
 	@Autowired
 	DbSeqService dbSeqService;
 	@Autowired

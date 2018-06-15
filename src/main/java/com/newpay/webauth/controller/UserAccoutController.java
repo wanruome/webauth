@@ -24,7 +24,7 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.PwdService;
-import com.newpay.webauth.services.UserInfoService;
+import com.newpay.webauth.services.UserAccountService;
 import com.ruomm.base.tools.BaseWebUtils;
 
 import io.swagger.annotations.ApiOperation;
@@ -32,11 +32,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/app/userInfo")
+@RequestMapping("/app/userAccount")
 
-public class UserInfoController {
+public class UserAccoutController {
 	@Autowired
-	UserInfoService userInfoService;
+	UserAccountService userAccountService;
 	@Autowired
 	PwdService pwdService;
 
@@ -63,7 +63,7 @@ public class UserInfoController {
 			return pwdParse.getReturnResp();
 		}
 		userInfoRegister.setPwd(pwdParse.getPwdParse());
-		return userInfoService.doRegister(userInfoRegister);
+		return userAccountService.doRegister(userInfoRegister);
 
 	}
 
@@ -81,7 +81,7 @@ public class UserInfoController {
 			return pwdParse.getReturnResp();
 		}
 		userInfoLoginReqDto.setPwd(pwdParse.getPwdParse());
-		return userInfoService.doLogin(userInfoLoginReqDto);
+		return userAccountService.doLogin(userInfoLoginReqDto);
 	}
 
 	@ApiOperation("用户注册")
@@ -107,7 +107,7 @@ public class UserInfoController {
 		userInfoModifyPwd.setNewPwd(newPwdParse.getPwdParse());
 		userInfoModifyPwd.setOldPwd(oldPwdParse.getPwdParse());
 		// 验证密码解密
-		return userInfoService.doModifyPwd(userInfoModifyPwd);
+		return userAccountService.doModifyPwd(userInfoModifyPwd);
 	}
 
 	@ApiOperation("用户注册")
@@ -123,7 +123,7 @@ public class UserInfoController {
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-		return userInfoService.doModifyMobie(userInfoModifyMobie);
+		return userAccountService.doModifyMobie(userInfoModifyMobie);
 	}
 
 	@ApiOperation("用户注册")
@@ -133,7 +133,7 @@ public class UserInfoController {
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-		return userInfoService.doModifyEmail(userInfoModifyEmail);
+		return userAccountService.doModifyEmail(userInfoModifyEmail);
 	}
 
 	@ApiOperation("用户注册")
@@ -142,7 +142,7 @@ public class UserInfoController {
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-		return userInfoService.doModifyName(userInfoModifyName);
+		return userAccountService.doModifyName(userInfoModifyName);
 	}
 
 }

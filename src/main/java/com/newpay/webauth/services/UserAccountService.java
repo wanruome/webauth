@@ -12,7 +12,7 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoModifyName;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 
-public interface UserInfoService {
+public interface UserAccountService {
 	public Object doLogin(UserInfoLoginReqDto userInfoLoginReqDto);
 
 	public Object doRegister(UserInfoRegisterReqDto loginUserReqDto);

@@ -13,7 +13,7 @@ import javax.persistence.Version;
 import lombok.Data;
 
 @Data
-@Table(name = "APP_ID")
+@Table(name = "TBL_LOGIN_APP_INFO")
 public class LoginAppInfo {
 	@Id
 	@Column(name = "APP_ID")

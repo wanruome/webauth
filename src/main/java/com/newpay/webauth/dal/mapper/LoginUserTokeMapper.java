@@ -9,6 +9,6 @@ import com.newpay.webauth.dal.model.LoginUserToken;
 
 import tk.mybatis.mapper.common.Mapper;
 
-public interface UserTokeInfoMapper extends Mapper<LoginUserToken> {
+public interface LoginUserTokeMapper extends Mapper<LoginUserToken> {
 
 }
