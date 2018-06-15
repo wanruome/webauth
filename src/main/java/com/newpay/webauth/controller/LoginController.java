@@ -30,6 +30,7 @@ public class LoginController {
 	 */
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public String login(HttpServletRequest request) {
+
 		String resultPageURL = InternalResourceViewResolver.FORWARD_URL_PREFIX + "/";
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");

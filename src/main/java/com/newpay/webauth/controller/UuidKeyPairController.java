@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/keypair")
+@RequestMapping("/app/keypair")
 public class UuidKeyPairController {
 	@Autowired
 	UuidKeyPairService uuidKeyPairService;

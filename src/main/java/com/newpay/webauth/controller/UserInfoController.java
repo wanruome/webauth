@@ -25,13 +25,14 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.PwdService;
 import com.newpay.webauth.services.UserInfoService;
+import com.ruomm.base.tools.BaseWebUtils;
 
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/userInfo")
+@RequestMapping("/app/userInfo")
 
 public class UserInfoController {
 	@Autowired
@@ -72,7 +73,8 @@ public class UserInfoController {
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		}
-
+		BaseWebUtils.getClassesRoot();
+		BaseWebUtils.getWwwroot();
 		RequestPwdParse pwdParse = pwdService.parseRequsetPwd(userInfoLoginReqDto.getPwd(),
 				userInfoLoginReqDto.getPwdEncrypt(), userInfoLoginReqDto.getUuid(), false);
 		if (!pwdParse.isValid()) {

@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/token")
+@RequestMapping("/app/token")
 public class TokenController {
 	@ApiOperation("用户注册")
 	@PostMapping("/doGetOprateToke")
