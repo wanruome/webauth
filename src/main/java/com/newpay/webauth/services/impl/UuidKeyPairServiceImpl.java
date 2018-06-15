@@ -16,7 +16,7 @@ import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.mapper.UuidKeyPairMapper;
 import com.newpay.webauth.dal.model.UuidKeyPair;
 import com.newpay.webauth.dal.request.keypair.UuidKeyPairReqDto;
-import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.UuidKeyPairService;
 import com.ruomm.base.tools.Base64;
 import com.ruomm.base.tools.DesUtil;
@@ -32,7 +32,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 	@Override
 	public Object getPublicKeyByUuid(UuidKeyPairReqDto uuidKeyPairReqDto) {
 		if (StringUtils.isBlank(uuidKeyPairReqDto.getUuid())) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		// if (StringUtils.getLength(uuidKeyPairReqDto.getUuid()) < 32) {
 		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
@@ -52,7 +52,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			keyType = AppConfig.PWD_ENCRYPT_3DES;
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		UuidKeyPair queryUuidKeyPair = new UuidKeyPair();
 		queryUuidKeyPair.setUuid(uuid);
@@ -123,7 +123,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			}
 		}
 		if (null == returnKeyPair) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_DB);
+			return ResultFactory.toNack(ResultFactory.ERR_DB);
 		}
 		else {
 			// 加入传输安全选项
@@ -137,7 +137,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 				tmpString = returnKeyPair.getPublicKey();
 			}
 			if (StringUtils.isBlank(tmpString)) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_DB);
+				return ResultFactory.toNack(ResultFactory.ERR_DB);
 			}
 
 			JSONObject jsonObject = new JSONObject();
@@ -145,7 +145,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			jsonObject.put("publicKey", tmpString);
 			jsonObject.put("keyVersion", returnKeyPair.getKeyVersion());
 			jsonObject.put("version", returnKeyPair.getVersion());
-			return BaseReturn.toSUCESS(jsonObject);
+			return ResultFactory.toAck(jsonObject);
 		}
 
 	}

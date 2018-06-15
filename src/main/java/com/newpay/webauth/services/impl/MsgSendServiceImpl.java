@@ -18,7 +18,7 @@ import com.newpay.webauth.dal.model.MsgAuthInfo;
 import com.newpay.webauth.dal.model.MsgFunctionInfo;
 import com.newpay.webauth.dal.model.MsgSendInfo;
 import com.newpay.webauth.dal.request.functionmsg.MsgSendReqDto;
-import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.MsgSendService;
 import com.ruomm.base.tools.RegexUtil;
@@ -40,16 +40,16 @@ public class MsgSendServiceImpl implements MsgSendService {
 		// TODO Auto-generated method stub
 		MsgFunctionInfo msgFunctionInfo = MsgFunctionConfig.getMsgFuntionInfo(msgSendReqDto.getMsgFunction());
 		if (null == msgFunctionInfo) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		boolean isEmail = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.EMAILS);
 		boolean isMobile = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.MOBILE_NUM);
 		if (!isEmail && !isMobile) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		if (msgFunctionInfo.getAuthType() == 1 || msgFunctionInfo.getAuthType() == 2) {
 			if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getToken())) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_TOKEN_MISS);
+				return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 			}
 		}
 		// 写入记录表
@@ -81,7 +81,7 @@ public class MsgSendServiceImpl implements MsgSendService {
 		msgSendInfo.setCreateTime(createTime);
 		int dbResult = msgSendInfoMapper.insertSelective(msgSendInfo);
 		if (dbResult <= 0) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_DB);
+			return ResultFactory.toNack(ResultFactory.ERR_DB);
 		}
 
 		MsgAuthInfo msgAuthInfo = new MsgAuthInfo();
@@ -113,10 +113,10 @@ public class MsgSendServiceImpl implements MsgSendService {
 			// dbResult = msgAuthInfoMapper.updateByExample(msgAuthInfo, example);
 		}
 		if (dbResult <= 0) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_DB);
+			return ResultFactory.toNack(ResultFactory.ERR_DB);
 		}
 		else {
-			return BaseReturn.toSUCESS(null);
+			return ResultFactory.toAck(null);
 		}
 	}
 

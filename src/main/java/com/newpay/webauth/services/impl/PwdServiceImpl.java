@@ -14,7 +14,7 @@ import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.core.RequestPwdParse;
 import com.newpay.webauth.dal.mapper.UuidKeyPairMapper;
 import com.newpay.webauth.dal.model.UuidKeyPair;
-import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.PwdService;
 import com.ruomm.base.tools.Base64;
 import com.ruomm.base.tools.DesUtil;
@@ -207,12 +207,12 @@ public class PwdServiceImpl implements PwdService {
 		pwdParse.setValid(false);
 		if (StringUtils.isBlank(pwdRequest) || StringUtils.isBlank(pwdUuid)) {
 			pwdParse.setValid(false);
-			pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM));
+			pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM));
 			return pwdParse;
 		}
 		if (!isEncryptTypeOk(pwdEncrypt)) {
 			pwdParse.setValid(false);
-			pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM));
+			pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM));
 			return pwdParse;
 		}
 		if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_NONE)) {
@@ -228,7 +228,7 @@ public class PwdServiceImpl implements PwdService {
 				String msg = parsePwdRuleToString(AppConfig.UserPwdMinLength, AppConfig.UserPwdMaxLength,
 						AppConfig.UserPwdMinRule);
 				pwdParse.setValid(false);
-				pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM, msg));
+				pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM, msg));
 				return pwdParse;
 
 			}
@@ -236,7 +236,7 @@ public class PwdServiceImpl implements PwdService {
 		else if (pwdEncrypt.equals(AppConfig.PWD_ENCRYPT_MD5)) {
 			if (pwdRequest.length() != 32) {
 				pwdParse.setValid(false);
-				pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM));
+				pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM));
 				return pwdParse;
 			}
 			String pwdResult = EncryptUtils.encodingMD5(pwdRequest);
@@ -249,12 +249,12 @@ public class PwdServiceImpl implements PwdService {
 			String pwd = getPwdByRsaOr3Des(pwdRequest, pwdEncrypt, pwdUuid);
 			if (StringUtils.isBlank(pwd)) {
 				pwdParse.setValid(false);
-				pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM, AppConfig.PWD_ERROR_PARSE));
+				pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM, AppConfig.PWD_ERROR_PARSE));
 				return pwdParse;
 			}
 			else if (pwd.length() != 32) {
 				pwdParse.setValid(false);
-				pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM));
+				pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM));
 				return pwdParse;
 			}
 			else {
@@ -269,7 +269,7 @@ public class PwdServiceImpl implements PwdService {
 			String pwd = getPwdByRsaOr3Des(pwdRequest, pwdEncrypt, pwdUuid);
 			if (StringUtils.isBlank(pwd)) {
 				pwdParse.setValid(false);
-				pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM, AppConfig.PWD_ERROR_PARSE));
+				pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM, AppConfig.PWD_ERROR_PARSE));
 				return pwdParse;
 			}
 			else {
@@ -285,7 +285,7 @@ public class PwdServiceImpl implements PwdService {
 					String msg = parsePwdRuleToString(AppConfig.UserPwdMinLength, AppConfig.UserPwdMaxLength,
 							AppConfig.UserPwdMinRule);
 					pwdParse.setValid(false);
-					pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM, msg));
+					pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM, msg));
 					return pwdParse;
 
 				}
@@ -293,7 +293,7 @@ public class PwdServiceImpl implements PwdService {
 		}
 		else {
 			pwdParse.setValid(false);
-			pwdParse.setReturnResp(BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM, AppConfig.PWD_ERROR_PARSE));
+			pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PRARM, AppConfig.PWD_ERROR_PARSE));
 			return pwdParse;
 		}
 	}

@@ -24,7 +24,7 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyName;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
-import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.UserAccountService;
 import com.ruomm.base.tools.EncryptUtils;
@@ -57,20 +57,20 @@ public class UserAccountServiceImpl implements UserAccountService {
 			queryUserAccount.setLoginId(userInfoLoginReqDto.getAccount());
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		LoginUserAccount resultLoginUserAccount = loginUserAccountMapper.selectOne(queryUserAccount);
 		if (null == resultLoginUserAccount) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "用户不存在");
 		}
 		else if (!resultLoginUserAccount.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "密码错误");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "密码错误");
 		}
 		String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
 		UsernamePasswordToken shiroToken = new UsernamePasswordToken(resultLoginUserAccount.getLoginId(),
 				TokenUtil.generateToken(), false);
 		SecurityUtils.getSubject().login(shiroToken);
-		return BaseReturn.toSUCESS(BaseReturn.SUCESS_CODE, null);
+		return ResultFactory.toAck(null);
 	}
 
 	@Override
@@ -89,18 +89,18 @@ public class UserAccountServiceImpl implements UserAccountService {
 			loginUserReqDto.setName(loginUserReqDto.getAccount());
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		if (!StringUtils.isBlank(loginUserReqDto.getMobie())) {
 			if (!RegexUtil.doRegex(loginUserReqDto.getMobie(), RegexUtil.MOBILE_NUM)) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+				return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 			}
 			if (VERIFY_IN_DB) {
 				LoginUserAccount queryUserInfo = new LoginUserAccount();
 				queryUserInfo.setLoginMobie(loginUserReqDto.getMobie());
 				List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserInfo);
 				if (null != lstResult && lstResult.size() > 0) {
-					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "手机号已经被注册了");
+					return ResultFactory.toNack(ResultFactory.ERR_CORE, "手机号已经被注册了");
 				}
 			}
 			insertUserAccount.setLoginMobie(loginUserReqDto.getMobie());
@@ -108,14 +108,14 @@ public class UserAccountServiceImpl implements UserAccountService {
 		// 验证邮箱是否有效
 		if (!StringUtils.isBlank(loginUserReqDto.getEmail())) {
 			if (!RegexUtil.doRegex(loginUserReqDto.getEmail(), RegexUtil.EMAILS)) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+				return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 			}
 			if (VERIFY_IN_DB) {
 				LoginUserAccount queryUserAccount = new LoginUserAccount();
 				queryUserAccount.setLoginEmail(loginUserReqDto.getEmail());
 				List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 				if (null != lstResult && lstResult.size() > 0) {
-					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "邮箱已经被注册了");
+					return ResultFactory.toNack(ResultFactory.ERR_CORE, "邮箱已经被注册了");
 				}
 			}
 			insertUserAccount.setLoginEmail(loginUserReqDto.getEmail());
@@ -123,14 +123,14 @@ public class UserAccountServiceImpl implements UserAccountService {
 		// 验证用户名是否有效
 		if (!StringUtils.isBlank(loginUserReqDto.getName())) {
 			if (!RegexUtil.doRegex(loginUserReqDto.getName(), RegexUtil.APP_LOGIN_NAME)) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+				return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 			}
 			if (VERIFY_IN_DB) {
 				LoginUserAccount queryUserAccount = new LoginUserAccount();
 				queryUserAccount.setLoginName(loginUserReqDto.getName());
 				List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 				if (null != lstResult && lstResult.size() > 0) {
-					return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户名已经被注册了");
+					return ResultFactory.toNack(ResultFactory.ERR_CORE, "用户名已经被注册了");
 				}
 			}
 			insertUserAccount.setLoginName(loginUserReqDto.getName());
@@ -142,10 +142,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 		insertUserAccount.setStatus(1);
 		int dbResult = loginUserAccountMapper.insertSelective(insertUserAccount);
 		if (dbResult > 0) {
-			return BaseReturn.toSUCESS("注册成功", null);
+			return ResultFactory.toAck(null);
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "注册失败：手机号、用户名、邮箱等重复");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "注册失败：手机号、用户名、邮箱等重复");
 		}
 	}
 
@@ -153,10 +153,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 	public Object doModifyPwd(UserInfoModifyPwd userInfoModifyPwd) {
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyPwd.getUserId());
 		if (null == dbLoginUserAccount) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "用户不存在");
 		}
 		if (!userInfoModifyPwd.getOldPwd().equals(dbLoginUserAccount.getLoginPwd())) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "旧的密码不正确");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "旧的密码不正确");
 		}
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
 		updateUserAccount.setLoginPwd(userInfoModifyPwd.getNewPwd());
@@ -164,10 +164,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
 			mapResult.put("version", updateUserAccount.getVersion() + "");
-			return BaseReturn.toSUCESS(mapResult);
+			return ResultFactory.toAck(mapResult);
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_SYSTEM);
+			return ResultFactory.toNack(ResultFactory.ERR_DB);
 		}
 	}
 
@@ -179,12 +179,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 			queryUserAccount.setLoginMobie(userInfoModifyMobie.getNewMobile());
 			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "手机号已经被注册了");
+				return ResultFactory.toNack(ResultFactory.ERR_CORE, "手机号已经被注册了");
 			}
 		}
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyMobie.getUserId());
 		if (null == dbLoginUserAccount) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "用户不存在");
 		}
 		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
@@ -193,10 +193,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
 			mapResult.put("version", updateUserAccount.getVersion() + "");
-			return BaseReturn.toSUCESS(mapResult);
+			return ResultFactory.toAck(mapResult);
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_SYSTEM);
+			return ResultFactory.toNack(ResultFactory.ERR_DB);
 		}
 	}
 
@@ -208,12 +208,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 			queryUserAccount.setLoginEmail(userInfoModifyEmail.getNewEmail());
 			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "邮箱已经被注册了");
+				return ResultFactory.toNack(ResultFactory.ERR_CORE, "邮箱已经被注册了");
 			}
 		}
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyEmail.getUserId());
 		if (null == dbLoginUserAccount) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "用户不存在");
 		}
 		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
@@ -222,10 +222,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
 			mapResult.put("version", updateUserAccount.getVersion() + "");
-			return BaseReturn.toSUCESS(mapResult);
+			return ResultFactory.toAck(mapResult);
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_SYSTEM);
+			return ResultFactory.toNack(ResultFactory.ERR_DB);
 		}
 	}
 
@@ -237,12 +237,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 			queryUserAccount.setLoginName(userInfoModifyName.getNewName());
 			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
-				return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户名已经被注册了");
+				return ResultFactory.toNack(ResultFactory.ERR_CORE, "用户名已经被注册了");
 			}
 		}
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyName.getUserId());
 		if (null == dbLoginUserAccount) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "用户不存在");
+			return ResultFactory.toNack(ResultFactory.ERR_CORE, "用户不存在");
 		}
 		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
@@ -251,10 +251,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
 			mapResult.put("version", updateUserAccount.getVersion() + "");
-			return BaseReturn.toSUCESS(mapResult);
+			return ResultFactory.toAck(mapResult);
 		}
 		else {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_SYSTEM);
+			return ResultFactory.toNack(ResultFactory.ERR_DB);
 		}
 	}
 

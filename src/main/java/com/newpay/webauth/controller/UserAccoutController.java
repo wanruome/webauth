@@ -22,7 +22,7 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyName;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
-import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.PwdService;
 import com.newpay.webauth.services.UserAccountService;
 import com.ruomm.base.tools.BaseWebUtils;
@@ -45,7 +45,7 @@ public class UserAccoutController {
 	public Object doRegister(@Valid @RequestBody UserInfoRegisterReqDto userInfoRegister, BindingResult bindingResult) {
 		System.out.println(PropertyUtil.getProperty("pwd_encrypt_limit"));
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		// if (StringUtils.isBlank(userInfoRegister.getPwdEncrypt())) {
 		// userInfoRegister.setPwdEncrypt(AppConfig.UserPwdEncryptDefault);
@@ -71,7 +71,7 @@ public class UserAccoutController {
 	@PostMapping("/doLogin")
 	public Object doLogin(@RequestBody UserInfoLoginReqDto userInfoLoginReqDto, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		BaseWebUtils.getClassesRoot();
 		BaseWebUtils.getWwwroot();
@@ -88,7 +88,7 @@ public class UserAccoutController {
 	@PostMapping("/doModifyPwd")
 	public Object doModifyPwd(@Valid @RequestBody UserInfoModifyPwd userInfoModifyPwd, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		// if (!pwdService.isEncryptTypeOk(userInfoModifyPwd.getPwdEncrypt())) {
 		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
@@ -121,7 +121,7 @@ public class UserAccoutController {
 	public Object doModifyMobie(@Valid @RequestBody UserInfoModifyMobie userInfoModifyMobie,
 			BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		return userAccountService.doModifyMobie(userInfoModifyMobie);
 	}
@@ -131,7 +131,7 @@ public class UserAccoutController {
 	public Object doModifyEmail(@Valid @RequestBody UserInfoModifyEmail userInfoModifyEmail,
 			BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		return userAccountService.doModifyEmail(userInfoModifyEmail);
 	}
@@ -140,7 +140,7 @@ public class UserAccoutController {
 	@PostMapping("/doModifyName")
 	public Object doModifyName(@Valid @RequestBody UserInfoModifyName userInfoModifyName, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 		return userAccountService.doModifyName(userInfoModifyName);
 	}

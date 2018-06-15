@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.newpay.webauth.dal.request.functionmsg.MsgSendReqDto;
-import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.MsgSendService;
 
 import io.swagger.annotations.ApiOperation;
@@ -32,7 +32,7 @@ public class MsgSendController {
 	@PostMapping("/doMsgSend")
 	public Object doMsgSend(@Valid @RequestBody MsgSendReqDto msgSendReqDto, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
-			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
+			return ResultFactory.toNack(ResultFactory.ERR_PRARM);
 		}
 
 		return functionMsgService.doSendMsg(msgSendReqDto);

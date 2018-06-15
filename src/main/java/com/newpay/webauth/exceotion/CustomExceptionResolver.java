@@ -15,9 +15,11 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
-import com.newpay.webauth.dal.response.BaseReturn;
+import com.newpay.webauth.dal.response.ResultFactory;
 
 public class CustomExceptionResolver implements HandlerExceptionResolver {
+	private static String ERR_UNKNOWN = "e499";
+
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler,
 			Exception ex) {
@@ -27,7 +29,7 @@ public class CustomExceptionResolver implements HandlerExceptionResolver {
 		// 解析JSON请求
 		if (null != contentType && contentType.toLowerCase().contains("application/json")) {
 
-			JSONObject baseResponse = BaseReturn.toFAIL(BaseReturn.ERROR_CODE_SYSTEM);
+			JSONObject baseResponse = ResultFactory.toNack(ERR_UNKNOWN);
 			Writer writer = null;
 			try {
 				writer = response.getWriter();

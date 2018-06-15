@@ -30,9 +30,14 @@ public class LoginAppInfo {
 	private Integer termIphoneLimit;
 	@Column(name = "TERM_WEB_LIMIT")
 	private Integer termWebLimit;
+	@Column(name = "NEW_KILL_OUT")
+	private Integer newKillOut;
+	@Column(name = "STATUS")
+	private Integer status;
 	@Column(name = "CREATE_TIME")
 	private String createTime;
 	@Column(name = "VERSION")
 	@Version
 	private Integer version;
+
 }
