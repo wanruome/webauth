@@ -5,10 +5,10 @@
  */
 package com.newpay.webauth.dal.mapper;
 
-import com.newpay.webauth.dal.model.UserTokeInfo;
+import com.newpay.webauth.dal.model.LoginUserToken;
 
 import tk.mybatis.mapper.common.Mapper;
 
-public interface UserTokeInfoMapper extends Mapper<UserTokeInfo> {
+public interface UserTokeInfoMapper extends Mapper<LoginUserToken> {
 
 }

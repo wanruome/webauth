@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import javax.persistence.Version;
 
 @Table(name = "TBL_USER_TOKEN")
-public class UserTokeInfo {
+public class LoginUserToken {
 	@Id
 	@Column(name = "USER_ID")
 	private String userId;
@@ -20,7 +20,7 @@ public class UserTokeInfo {
 	private String appId;
 	@Id
 	@Column(name = "TERM_TYPE")
-	private String termType;
+	private Integer termType;
 	@Column(name = "TOKENS")
 	private String tokens;
 	@Column(name = "VALID_TIME")
