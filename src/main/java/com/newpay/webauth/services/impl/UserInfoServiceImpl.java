@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,10 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.BaseReturn;
 import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.UserInfoService;
+import com.ruomm.base.tools.EncryptUtils;
 import com.ruomm.base.tools.RegexUtil;
 import com.ruomm.base.tools.StringUtils;
+import com.ruomm.base.tools.TokenUtil;
 
 @Component
 @Service
@@ -62,11 +66,10 @@ public class UserInfoServiceImpl implements UserInfoService {
 		else if (!resultLoginUserInfo.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
 			return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_CORE, "密码错误");
 		}
-		// String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
-		// UsernamePasswordToken shiroToken = new
-		// UsernamePasswordToken(resultLoginUserInfo.getLoginId(),
-		// TokenUtil.generateToken(), false);
-		// SecurityUtils.getSubject().login(shiroToken);
+		String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
+		UsernamePasswordToken shiroToken = new UsernamePasswordToken(resultLoginUserInfo.getLoginId(),
+				TokenUtil.generateToken(), false);
+		SecurityUtils.getSubject().login(shiroToken);
 		return BaseReturn.toSUCESS(BaseReturn.SUCESS_CODE, null);
 	}
 
