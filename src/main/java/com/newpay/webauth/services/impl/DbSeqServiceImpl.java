@@ -47,6 +47,17 @@ public class DbSeqServiceImpl implements DbSeqService {
 		}
 	}
 
+	@Override
+	public String getLoginTokenNewPk() {
+		// TODO Auto-generated method stub
+		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
+			return getSeqByName("SEQ_LOGIN_TOKEN_NEW_PK", 100000) + "";
+		}
+		else {
+			return dbSequenceMapper.getSeqNextval("SEQ_LOGIN_TOKEN_NEW_PK") + "";
+		}
+	}
+
 	// public Long getSeqByNameLong(String name, int insertValue) {
 	// // TODO Auto-generated method stub
 	// int resultValue = getSeqByName(name, insertValue);

@@ -10,23 +10,29 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
-@Table(name = "TBL_USER_TOKEN")
+import lombok.Data;
+
+@Data
+@Table(name = "TBL_LOGIN_USER_TOKEN")
 public class LoginUserToken {
 	@Id
+	@Column(name = "TOKEN_ID")
+	private String tokenId;
 	@Column(name = "USER_ID")
 	private String userId;
-	@Id
 	@Column(name = "APP_ID")
 	private String appId;
-	@Id
 	@Column(name = "TERM_TYPE")
 	private Integer termType;
-	@Column(name = "TOKENS")
-	private String tokens;
+	@Column(name = "TOKEN")
+	private String token;
 	@Column(name = "VALID_TIME")
 	private String validTime;
+	@Column(name = "LOGIN_STATUS")
+	private Integer loginStatus;
 	@Column(name = "CREATE_TIME")
 	private String createTime;
+
 	@Version
 	@Column(name = "VERSION")
 	private Integer version;

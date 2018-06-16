@@ -5,10 +5,11 @@
  */
 package com.newpay.webauth.services;
 
-import com.newpay.webauth.dal.response.ResultFactory;
+import com.alibaba.fastjson.JSONObject;
+import com.newpay.webauth.dal.core.TokenResponseParse;
 
 public interface UserTokenInfoService {
-	public ResultFactory createTokenForLogin(String userId, String appId, String termType);
+	public TokenResponseParse createTokenForLogin(String userId, String appId, String termType);
 
-	public ResultFactory distoryTokenForLogout(String userId, String appId, String termType);
+	public JSONObject distoryTokenForLogout(String userId, String appId, String termType);
 }

@@ -9,13 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.newpay.webauth.config.AppConfig;
+import com.newpay.webauth.dal.core.TokenResponseParse;
 import com.newpay.webauth.dal.mapper.LoginUserAccountMapper;
 import com.newpay.webauth.dal.model.LoginUserAccount;
 import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
@@ -27,14 +26,15 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.UserAccountService;
-import com.ruomm.base.tools.EncryptUtils;
+import com.newpay.webauth.services.UserTokenInfoService;
 import com.ruomm.base.tools.RegexUtil;
 import com.ruomm.base.tools.StringUtils;
-import com.ruomm.base.tools.TokenUtil;
 
 @Component
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
+	@Autowired
+	UserTokenInfoService userTokenInfoService;
 	@Autowired
 	DbSeqService dbSeqService;
 	@Autowired
@@ -66,11 +66,25 @@ public class UserAccountServiceImpl implements UserAccountService {
 		else if (!resultLoginUserAccount.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
 			return ResultFactory.toNackCORE("密码错误");
 		}
-		String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
-		UsernamePasswordToken shiroToken = new UsernamePasswordToken(resultLoginUserAccount.getLoginId(),
-				TokenUtil.generateToken(), false);
-		SecurityUtils.getSubject().login(shiroToken);
-		return ResultFactory.toAck(null);
+		// String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
+		// UsernamePasswordToken shiroToken = new
+		// UsernamePasswordToken(resultLoginUserAccount.getLoginId(),
+		// TokenUtil.generateToken(), false);
+		// SecurityUtils.getSubject().login(shiroToken);
+
+		TokenResponseParse tokenResponseParse = userTokenInfoService.createTokenForLogin(
+				resultLoginUserAccount.getLoginId(), userInfoLoginReqDto.getAppId(), userInfoLoginReqDto.getTermType());
+		if (!tokenResponseParse.isValid()) {
+			return tokenResponseParse.getReturnResp();
+		}
+
+		Map<String, String> resultData = new HashMap<>();
+		resultData.put("token", tokenResponseParse.getLoginUserToken().getToken());
+		resultData.put("validTime", tokenResponseParse.getLoginUserToken().getValidTime());
+		resultData.put("termType", tokenResponseParse.getLoginUserToken().getTermType() + "");
+		resultData.put("version", tokenResponseParse.getLoginUserToken().getVersion() + "");
+		resultData.put("userId", resultLoginUserAccount.getLoginId());
+		return ResultFactory.toAck(resultData);
 	}
 
 	@Override

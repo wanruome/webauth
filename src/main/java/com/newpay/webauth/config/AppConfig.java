@@ -75,7 +75,10 @@ public class AppConfig {
 	public static String ACCOUNT_TYPE_EMAIL = "2";
 	public static String ACCOUNT_TYPE_NAME = "3";
 	public static String ACCOUNT_TYPE_USERID = "4";
-
+	public static String TERM_TYPE_ANDROID = "1";
+	public static String TERM_TYPE_IPHONE = "2";
+	public static String TERM_TYPE_WEB = "3";
+	public static String TERM_TYPE_ALL = "4";
 	public static String PWD_ERROR_PARSE = "密码解析有误，请求参数错误";
 
 	// public static int getUpdateVersion(int version) {

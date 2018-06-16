@@ -21,4 +21,8 @@ public class UserInfoLoginReqDto {
 	private String uuid;
 	@NotEmpty
 	private String pwdEncrypt;
+	@NotEmpty
+	private String appId;
+	@NotEmpty
+	private String termType;
 }

@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.newpay.webauth.config.AppConfig;
-import com.newpay.webauth.dal.core.RequestPwdParse;
+import com.newpay.webauth.dal.core.PwdRequestParse;
 import com.newpay.webauth.dal.mapper.UuidKeyPairMapper;
 import com.newpay.webauth.dal.model.UuidKeyPair;
 import com.newpay.webauth.dal.response.ResultFactory;
@@ -201,9 +201,9 @@ public class PwdServiceImpl implements PwdService {
 	 * 解析请求的密码，返回解析是否成功和解析好的密码字段
 	 */
 	@Override
-	public RequestPwdParse parseRequsetPwd(String pwdRequest, String pwdEncrypt, String pwdUuid, boolean isRuleCheck) {
+	public PwdRequestParse parseRequsetPwd(String pwdRequest, String pwdEncrypt, String pwdUuid, boolean isRuleCheck) {
 		// TODO Auto-generated method stub
-		RequestPwdParse pwdParse = new RequestPwdParse();
+		PwdRequestParse pwdParse = new PwdRequestParse();
 		pwdParse.setValid(false);
 		if (StringUtils.isBlank(pwdRequest) || StringUtils.isBlank(pwdUuid)) {
 			pwdParse.setValid(false);

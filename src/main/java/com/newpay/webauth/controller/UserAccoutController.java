@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.newpay.webauth.config.PropertyUtil;
-import com.newpay.webauth.dal.core.RequestPwdParse;
+import com.newpay.webauth.dal.core.PwdRequestParse;
 import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
@@ -57,7 +57,7 @@ public class UserAccoutController {
 		//
 		// }
 
-		RequestPwdParse pwdParse = pwdService.parseRequsetPwd(userInfoRegister.getPwd(),
+		PwdRequestParse pwdParse = pwdService.parseRequsetPwd(userInfoRegister.getPwd(),
 				userInfoRegister.getPwdEncrypt(), userInfoRegister.getUuid(), true);
 		if (!pwdParse.isValid()) {
 			return pwdParse.getReturnResp();
@@ -69,13 +69,13 @@ public class UserAccoutController {
 
 	@ApiOperation("用户注册")
 	@PostMapping("/doLogin")
-	public Object doLogin(@RequestBody UserInfoLoginReqDto userInfoLoginReqDto, BindingResult bindingResult) {
+	public Object doLogin(@Valid @RequestBody UserInfoLoginReqDto userInfoLoginReqDto, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return ResultFactory.toNackPARAM();
 		}
 		BaseWebUtils.getClassesRoot();
 		BaseWebUtils.getWwwroot();
-		RequestPwdParse pwdParse = pwdService.parseRequsetPwd(userInfoLoginReqDto.getPwd(),
+		PwdRequestParse pwdParse = pwdService.parseRequsetPwd(userInfoLoginReqDto.getPwd(),
 				userInfoLoginReqDto.getPwdEncrypt(), userInfoLoginReqDto.getUuid(), false);
 		if (!pwdParse.isValid()) {
 			return pwdParse.getReturnResp();
@@ -93,9 +93,9 @@ public class UserAccoutController {
 		// if (!pwdService.isEncryptTypeOk(userInfoModifyPwd.getPwdEncrypt())) {
 		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		// }
-		RequestPwdParse oldPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getOldPwd(),
+		PwdRequestParse oldPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getOldPwd(),
 				userInfoModifyPwd.getOldPwdEncrypt(), userInfoModifyPwd.getUuid(), false);
-		RequestPwdParse newPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getNewPwd(),
+		PwdRequestParse newPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getNewPwd(),
 				userInfoModifyPwd.getNewPwdEncrypt(), userInfoModifyPwd.getUuid(), true);
 
 		if (!newPwdParse.isValid()) {

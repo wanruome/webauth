@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.newpay.webauth.dal.mapper.LoginUserTokenMapper">
+
+	<resultMap id="baseResultMap" type="com.newpay.webauth.dal.model.LoginUserToken">
+			<result property="tokenId" column="TOKEN_ID" jdbcType="VARCHAR"/>
+			<result property="userId" column="USER_ID" jdbcType="VARCHAR"/>
+			<result property="appId" column="APP_ID" jdbcType="VARCHAR"/>
+			<result property="termType" column="TERM_TYPE" jdbcType="NUMERIC"/>
+			<result property="token" column="TOKEN" jdbcType="VARCHAR"/>
+			<result property="validTime" column="VALID_TIME" jdbcType="VARCHAR"/>
+			<result property="loginStatus" column="LOGIN_STATUS" jdbcType="NUMERIC"/>
+			<result property="createTime" column="CREATE_TIME" jdbcType="VARCHAR"/>
+			<result property="version" column="VERSION" jdbcType="NUMERIC"/>
+	</resultMap>
+	<update id="logoutAllInValid" >
+		<![CDATA[
+		update TBL_LOGIN_USER_TOKEN set LOGIN_STATUS=0 where 
+		USER_ID=#{loginUserToken.userId} and APP_ID=#{loginUserToken.appId} and LOGIN_STATUS=1 and VALID_TIME<=#{loginUserToken.validTime}
+		]]>
+	</update>
+	<select id="selectLoginTokens" resultMap="baseResultMap">
+		select * from TBL_LOGIN_USER_TOKEN 
+		<where>
+			USER_ID=#{loginUserToken.userId} AND APP_ID=#{loginUserToken.appId} AND LOGIN_STATUS=1 
+			<if test="loginUserToken.termType !=null">
+				AND TERM_TYPE=#{loginUserToken.termType}
+			</if>
+		</where>
+		order by VALID_TIME
+	</select>
+	
+	
+
+	
+</mapper>
+

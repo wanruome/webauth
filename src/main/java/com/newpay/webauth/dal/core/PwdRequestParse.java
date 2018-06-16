@@ -10,7 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
 @Data
-public class RequestPwdParse {
+public class PwdRequestParse {
 	boolean isValid = false;
 	JSONObject returnResp;
 	String pwdParse;

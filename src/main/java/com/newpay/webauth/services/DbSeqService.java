@@ -9,4 +9,6 @@ public interface DbSeqService {
 	public String getLoginUserNewPK();
 
 	public String getMsgInfoNewPk();
+
+	public String getLoginTokenNewPk();
 }
