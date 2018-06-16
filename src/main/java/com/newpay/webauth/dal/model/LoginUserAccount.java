@@ -21,7 +21,7 @@ public class LoginUserAccount {
 	@Column(name = "LOGIN_NAME")
 	private String loginName;
 	@Column(name = "LOGIN_MOBILE")
-	private String loginMobie;
+	private String loginMobile;
 	@Column(name = "LOGIN_EMAIL")
 	private String loginEmail;
 	@Column(name = "LOGIN_PWD")

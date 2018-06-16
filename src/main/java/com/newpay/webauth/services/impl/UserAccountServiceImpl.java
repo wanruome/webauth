@@ -45,7 +45,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 	public Object doLogin(UserInfoLoginReqDto userInfoLoginReqDto) {
 		LoginUserAccount queryUserAccount = new LoginUserAccount();
 		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserAccount.setLoginMobie(userInfoLoginReqDto.getAccount());
+			queryUserAccount.setLoginMobile(userInfoLoginReqDto.getAccount());
 		}
 		else if (AppConfig.ACCOUNT_TYPE_EMAIL.equals(userInfoLoginReqDto.getAccountType())) {
 			queryUserAccount.setLoginEmail(userInfoLoginReqDto.getAccount());
@@ -84,6 +84,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 		resultData.put("termType", tokenResponseParse.getLoginUserToken().getTermType() + "");
 		resultData.put("version", tokenResponseParse.getLoginUserToken().getVersion() + "");
 		resultData.put("userId", resultLoginUserAccount.getLoginId());
+		resultData.put("appId", tokenResponseParse.getLoginUserToken().getAppId());
+		resultData.put("email", resultLoginUserAccount.getLoginEmail());
+		resultData.put("name", resultLoginUserAccount.getLoginName());
+		resultData.put("mobile", resultLoginUserAccount.getLoginMobile());
 		return ResultFactory.toAck(resultData);
 	}
 
@@ -111,13 +115,13 @@ public class UserAccountServiceImpl implements UserAccountService {
 			}
 			if (VERIFY_IN_DB) {
 				LoginUserAccount queryUserInfo = new LoginUserAccount();
-				queryUserInfo.setLoginMobie(loginUserReqDto.getMobie());
+				queryUserInfo.setLoginMobile(loginUserReqDto.getMobie());
 				List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserInfo);
 				if (null != lstResult && lstResult.size() > 0) {
 					return ResultFactory.toNackCORE("手机号已经被注册了");
 				}
 			}
-			insertUserAccount.setLoginMobie(loginUserReqDto.getMobie());
+			insertUserAccount.setLoginMobile(loginUserReqDto.getMobie());
 		}
 		// 验证邮箱是否有效
 		if (!StringUtils.isBlank(loginUserReqDto.getEmail())) {
@@ -190,7 +194,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		// TODO Auto-generated method stub
 		if (VERIFY_IN_DB) {
 			LoginUserAccount queryUserAccount = new LoginUserAccount();
-			queryUserAccount.setLoginMobie(userInfoModifyMobie.getNewMobile());
+			queryUserAccount.setLoginMobile(userInfoModifyMobie.getNewMobile());
 			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
 				return ResultFactory.toNackCORE("手机号已经被注册了");
@@ -202,7 +206,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		}
 		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
-		updateUserAccount.setLoginMobie(userInfoModifyMobie.getNewMobile());
+		updateUserAccount.setLoginMobile(userInfoModifyMobie.getNewMobile());
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
