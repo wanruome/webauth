@@ -20,11 +20,11 @@ public class SignTools {
 		if (StringUtils.isBlank(token) || null == jsonObject) {
 			return false;
 		}
-		String signInfo = jsonObject.getString(AppConfig.SIGN_FIELD_NAME);
+		String signInfo = jsonObject.getString(AppConfig.REQUEST_FIELD_SIGN_INFO);
 		if (StringUtils.isBlank(signInfo)) {
 			return false;
 		}
-		jsonObject.remove(AppConfig.SIGN_FIELD_NAME);
+		jsonObject.remove(AppConfig.REQUEST_FIELD_SIGN_INFO);
 		Map<String, String> maps = parseJsonToMap(jsonObject);
 		String value = getKeyString(maps) + token;
 		return signInfo.equals(EncryptUtils.encodingMD5(value));

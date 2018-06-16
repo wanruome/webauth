@@ -117,13 +117,13 @@ public class UserAccoutController {
 	}
 
 	@ApiOperation("用户注册")
-	@PostMapping("/doModifyMobie")
-	public Object doModifyMobie(@Valid @RequestBody UserInfoModifyMobie userInfoModifyMobie,
+	@PostMapping("/doModifyMobile")
+	public Object doModifyMobile(@Valid @RequestBody UserInfoModifyMobie userInfoModifyMobie,
 			BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return ResultFactory.toNackPARAM();
 		}
-		return userAccountService.doModifyMobie(userInfoModifyMobie);
+		return userAccountService.doModifyMobile(userInfoModifyMobie);
 	}
 
 	@ApiOperation("用户注册")

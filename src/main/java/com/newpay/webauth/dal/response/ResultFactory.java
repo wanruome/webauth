@@ -19,6 +19,7 @@ public class ResultFactory {
 	public static String ERR_UNKNOWN = "e499";
 	public static String ERR_PARSE_REQUEST = "e410";
 	public static String ERR_TOKEN_INVALID = "e411";
+	public static String ERR_MSGCODE_INVALID = "e412";
 
 	// public static String ERROR_TOKEN_MISS = "e001";
 	// public static String ERROR_TOKEN_INVALID = "e000";
@@ -156,6 +157,10 @@ public class ResultFactory {
 				else if (realCode.equals(ERR_PARSE_REQUEST)) {
 					realMsg = "无效的请求信息";
 				}
+				else if (realCode.equals(ERR_MSGCODE_INVALID)) {
+					realMsg = "短信验证码不正确";
+				}
+
 				// else if (realCode.equals(ERROR_CODE_SYSTEM)) {
 				// realMsg = "未知错误，请求失败，请重试";
 				// }

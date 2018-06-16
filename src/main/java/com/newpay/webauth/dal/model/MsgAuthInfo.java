@@ -18,18 +18,23 @@ public class MsgAuthInfo {
 	@Id
 	@Column(name = "UUID")
 	private String uuid;
-	@Column(name = "MSG_ADDR")
-	private String msgAddr;
+	@Id
 	@Column(name = "FUNCTION_ID")
 	private String functionId;
-	@Column(name = "SESSION_TOKEN")
-	private String sessionToken;
+	@Column(name = "MSG_ADDR")
+	private String msgAddr;
+	@Column(name = "FUNCTION_TO_ID")
+	private String functionToId;
+	@Column(name = "SESSION_TOKEN_ID")
+	private String sessionTokenId;
 	@Column(name = "MSG_CODE")
 	private String msgCode;
 	@Column(name = "MSG_VALID_TIME")
 	private String msgValidTime;
 	@Column(name = "MSG_TOKEN")
 	private String msgToken;
+	@Column(name = "MSG_STATUS")
+	private Integer msgStatus;
 	@Version
 	@Column(name = "VERISON")
 	private Integer version;

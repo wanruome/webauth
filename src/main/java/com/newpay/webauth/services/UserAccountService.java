@@ -19,7 +19,7 @@ public interface UserAccountService {
 
 	public Object doModifyPwd(UserInfoModifyPwd userInfoModifyPwd);
 
-	public Object doModifyMobie(UserInfoModifyMobie userInfoModifyMobie);
+	public Object doModifyMobile(UserInfoModifyMobie userInfoModifyMobie);
 
 	public Object doModifyEmail(UserInfoModifyEmail userInfoModifyEmail);
 

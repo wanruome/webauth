@@ -6,7 +6,10 @@
 package com.newpay.webauth.services;
 
 import com.newpay.webauth.dal.request.functionmsg.MsgSendReqDto;
+import com.newpay.webauth.dal.request.functionmsg.MsgTokenGetReqDto;
 
 public interface MsgSendService {
 	public Object doSendMsg(MsgSendReqDto msgSendReqDto);
+
+	public Object doGetMsgToken(MsgTokenGetReqDto msgTokenGetReqDto);
 }

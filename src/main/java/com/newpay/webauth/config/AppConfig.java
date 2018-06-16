@@ -63,10 +63,12 @@ public class AppConfig {
 
 	}
 
-	public static final String SIGN_FIELD_NAME = "signInfo";
-	public static final String SIGN_APP_ID = "appId";
-	public static final String SIGN_USER_ID = "userId";
-	public static final String SIGN_TOKEN_ID = "tokenId";
+	public static final String REQUEST_FIELD_SIGN_INFO = "signInfo";
+	public static final String REQUEST_FIELD_APP_ID = "appId";
+	public static final String REQUEST_FIELD_UUID = "uuid";
+	public static final String REQUEST_FIELD_USER_ID = "userId";
+	public static final String REQUEST_FIELD_TOKEN_ID = "tokenId";
+	public static final String REQUEST_FIELD_VERIFY_CODE = "msgVerifyCode";
 	public static SimpleDateFormat SDF_DB_DATE = new SimpleDateFormat("yyyyMMdd");
 	public static SimpleDateFormat SDF_DB_VERSION = new SimpleDateFormat("yyyyMMddHHmmss");
 	public static String PWD_ENCRYPT_NONE = "NONE";

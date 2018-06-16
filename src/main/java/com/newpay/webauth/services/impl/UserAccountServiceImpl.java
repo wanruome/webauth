@@ -191,7 +191,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 	}
 
 	@Override
-	public Object doModifyMobie(UserInfoModifyMobie userInfoModifyMobie) {
+	public Object doModifyMobile(UserInfoModifyMobie userInfoModifyMobie) {
 		// TODO Auto-generated method stub
 		if (VERIFY_IN_DB) {
 			LoginUserAccount queryUserAccount = new LoginUserAccount();

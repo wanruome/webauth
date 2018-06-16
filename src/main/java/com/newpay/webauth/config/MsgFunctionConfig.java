@@ -9,9 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import com.newpay.webauth.config.listener.SpringContextHolder;
 import com.newpay.webauth.dal.model.MsgFunctionInfo;
 import com.newpay.webauth.services.MsgFunctionInfoService;
+import com.ruomm.base.tools.BaseWebUtils;
 
 public class MsgFunctionConfig {
 	private static Map<String, MsgFunctionInfo> msgFunctionMap = null;
@@ -21,6 +25,28 @@ public class MsgFunctionConfig {
 			getAllMsgFunction();
 		}
 		return msgFunctionMap.get(msgFunction);
+	}
+
+	public static MsgFunctionInfo getMsgFuntionInfoByURI(ServletRequest servletRequest) {
+		try {
+			String uri = ((HttpServletRequest) servletRequest).getRequestURI();
+			String realUri = BaseWebUtils.getRealUri(uri);
+			if (null == msgFunctionMap) {
+				getAllMsgFunction();
+			}
+			MsgFunctionInfo msgFunction = null;
+			for (String key : msgFunctionMap.keySet()) {
+				if (realUri.endsWith(msgFunctionMap.get(key).getMapping())) {
+					msgFunction = msgFunctionMap.get(key);
+				}
+			}
+			return msgFunction;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
 	}
 
 	public static void reload() {

@@ -43,7 +43,7 @@
 		<property name="securityManager" ref="securityManager"></property>
 		<property name="filterChainDefinitions">
 			<value>
-				/app/msg/*= userShiroFilter
+				/app/** = userShiroFilter
 			</value>
 		</property>
 		<!-- 要求登录时的链接(登录页面地址)，非必须的属性，默认会自动寻找Web工程根目录下的"/login.jsp"页面 -->

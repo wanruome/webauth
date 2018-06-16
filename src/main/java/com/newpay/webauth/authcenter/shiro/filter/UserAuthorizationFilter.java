@@ -19,15 +19,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.config.AppConfig;
+import com.newpay.webauth.config.MsgFunctionConfig;
 import com.newpay.webauth.config.sign.SignTools;
 import com.newpay.webauth.dal.mapper.LoginUserTokenMapper;
+import com.newpay.webauth.dal.mapper.MsgAuthInfoMapper;
 import com.newpay.webauth.dal.model.LoginUserToken;
+import com.newpay.webauth.dal.model.MsgAuthInfo;
+import com.newpay.webauth.dal.model.MsgFunctionInfo;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.ruomm.base.tools.StringUtils;
 
 public class UserAuthorizationFilter extends AuthorizationFilter {
 	@Autowired
 	LoginUserTokenMapper loginUserTokenMapper;
+	@Autowired
+	MsgAuthInfoMapper msgAuthInfoMapper;
 
 	@Override
 	protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws IOException {
@@ -42,28 +48,74 @@ public class UserAuthorizationFilter extends AuthorizationFilter {
 			e.printStackTrace();
 		}
 		if (null == jsonObject) {
-			throwException(ResultFactory.ERR_PARSE_REQUEST, response);
+			throwException(response, ResultFactory.ERR_PARSE_REQUEST);
 			return false;
 		}
 		else {
-			String signInfo = jsonObject.getString(AppConfig.SIGN_FIELD_NAME);
+			// 进行短信验证码验证流程
+			String verifyCode = jsonObject.getString(AppConfig.REQUEST_FIELD_VERIFY_CODE);
+			if (!StringUtils.isEmpty(verifyCode)) {
+				MsgFunctionInfo msgFunctionInfo = MsgFunctionConfig.getMsgFuntionInfoByURI(request);
+				if (null == msgFunctionInfo) {
+					throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "此功能不需要短信验证码");
+					return false;
+				}
+				String msgUUID = null;
+				if (msgFunctionInfo.getAuthType() == 0) {
+					msgUUID = jsonObject.getString(AppConfig.REQUEST_FIELD_UUID);
+				}
+				else {
+					msgUUID = jsonObject.getString(AppConfig.REQUEST_FIELD_USER_ID);
+				}
+				if (StringUtils.isEmpty(msgUUID)) {
+					throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "请求参数错误");
+				}
+				String nowDateStr = AppConfig.SDF_DB_VERSION.format(new Date());
+				MsgAuthInfo msgAuthInfo = new MsgAuthInfo();
+				msgAuthInfo.setUuid(msgUUID);
+				msgAuthInfo.setFunctionId(msgFunctionInfo.getFunctionId());
+				MsgAuthInfo resultAuthInfo = msgAuthInfoMapper.selectByPrimaryKey(msgAuthInfo);
+				if (null == resultAuthInfo || nowDateStr.compareTo(resultAuthInfo.getMsgValidTime()) >= 0) {
+					throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "你还没有获取短信验证码");
+					return false;
+				}
+				else if (resultAuthInfo.getMsgStatus() != 1) {
+					throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码已经失效，请重新获取");
+					return false;
+				}
+				else {
+					msgAuthInfo.setMsgStatus(0);
+					msgAuthInfo.setVersion(resultAuthInfo.getVersion());
+					int dbResult = msgAuthInfoMapper.updateByPrimaryKeySelective(msgAuthInfo);
+					if (dbResult <= 0) {
+						throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码已经失效，请重新获取");
+						return false;
+					}
+					if (!verifyCode.equals(resultAuthInfo.getMsgCode())) {
+						throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码不正确");
+						return false;
+					}
+				}
+			}
+			String signInfo = jsonObject.getString(AppConfig.REQUEST_FIELD_SIGN_INFO);
 			if (StringUtils.isEmpty(signInfo)) {
 				return true;
 			}
 			else {
-				String userId = jsonObject.getString(AppConfig.SIGN_USER_ID);
-				String appId = jsonObject.getString(AppConfig.SIGN_APP_ID);
-				String tokenId = jsonObject.getString(AppConfig.SIGN_TOKEN_ID);
+				String userId = jsonObject.getString(AppConfig.REQUEST_FIELD_USER_ID);
+				String appId = jsonObject.getString(AppConfig.REQUEST_FIELD_APP_ID);
+				String tokenId = jsonObject.getString(AppConfig.REQUEST_FIELD_TOKEN_ID);
 				String token = getTokenById(tokenId, userId, appId);
 				if (SignTools.verifySign(jsonObject, token)) {
 					return true;
 				}
 				{
-					throwException(ResultFactory.ERR_TOKEN_INVALID, response);
+					throwException(response, ResultFactory.ERR_TOKEN_INVALID);
 					return false;
 				}
 
 			}
+
 		}
 
 	}
@@ -113,11 +165,19 @@ public class UserAuthorizationFilter extends AuthorizationFilter {
 		}
 	}
 
-	private void throwException(String errCode, ServletResponse response) throws IOException {
+	private void throwException(ServletResponse response, String errCode) throws IOException {
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 		httpServletResponse.setHeader("Content-type", "application/json;charset=UTF-8");
 		httpServletResponse.setHeader("Cache-Control", "no-cache, must-revalidate");
 		JSONObject resultJson = ResultFactory.toNack(errCode, null);
+		httpServletResponse.getWriter().write(resultJson.toJSONString());
+	}
+
+	private void throwException(ServletResponse response, String errCode, String errMsg) throws IOException {
+		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+		httpServletResponse.setHeader("Content-type", "application/json;charset=UTF-8");
+		httpServletResponse.setHeader("Cache-Control", "no-cache, must-revalidate");
+		JSONObject resultJson = ResultFactory.toNack(errCode, errMsg);
 		httpServletResponse.getWriter().write(resultJson.toJSONString());
 	}
 

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.newpay.webauth.dal.request.functionmsg.MsgSendReqDto;
+import com.newpay.webauth.dal.request.functionmsg.MsgTokenGetReqDto;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.MsgSendService;
 
@@ -37,4 +38,15 @@ public class MsgSendController {
 
 		return functionMsgService.doSendMsg(msgSendReqDto);
 	}
+
+	@ApiOperation("用户注册")
+	@PostMapping("/doGetMsgToken")
+	public Object doGetMsgToken(@Valid @RequestBody MsgTokenGetReqDto msgTokenGetReqDto, BindingResult bindingResult) {
+		if (null == bindingResult || bindingResult.hasErrors()) {
+			return ResultFactory.toNackPARAM();
+		}
+
+		return functionMsgService.doGetMsgToken(msgTokenGetReqDto);
+	}
+
 }
