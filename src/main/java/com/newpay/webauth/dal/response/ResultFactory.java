@@ -17,6 +17,9 @@ public class ResultFactory {
 	private static String ERR_CORE = "e402";
 	private static String ERR_DB = "e403";
 	public static String ERR_UNKNOWN = "e499";
+	public static String ERR_PARSE_REQUEST = "e410";
+	public static String ERR_TOKEN_INVALID = "e411";
+
 	// public static String ERROR_TOKEN_MISS = "e001";
 	// public static String ERROR_TOKEN_INVALID = "e000";
 	private static String SUCESS_CODE = "0000";
@@ -146,6 +149,12 @@ public class ResultFactory {
 				}
 				else if (realCode.equals(ERR_UNKNOWN)) {
 					realMsg = "网络请求失败";
+				}
+				else if (realCode.equals(ERR_TOKEN_INVALID)) {
+					realMsg = "签名信息不正确";
+				}
+				else if (realCode.equals(ERR_PARSE_REQUEST)) {
+					realMsg = "无效的请求信息";
 				}
 				// else if (realCode.equals(ERROR_CODE_SYSTEM)) {
 				// realMsg = "未知错误，请求失败，请重试";

@@ -12,4 +12,6 @@ public interface UserTokenInfoService {
 	public TokenResponseParse createTokenForLogin(String userId, String appId, String termType);
 
 	public JSONObject distoryTokenForLogout(String userId, String appId, String termType);
+
+	public String getTokenById(String tokenId, String userId, String appId);
 }

@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/msg")
+@RequestMapping("app/msg")
 public class MsgSendController {
 	@Autowired
 	MsgSendService functionMsgService;

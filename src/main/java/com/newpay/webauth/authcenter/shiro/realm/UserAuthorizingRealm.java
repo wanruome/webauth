@@ -7,7 +7,6 @@ package com.newpay.webauth.authcenter.shiro.realm;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -16,9 +15,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.Subject;
 
 import com.newpay.webauth.authcenter.shiro.model.User;
 
@@ -61,25 +58,24 @@ public class UserAuthorizingRealm extends AuthorizingRealm {
 				"验证当前Subject时获取到token为" + ReflectionToStringBuilder.toString(token, ToStringStyle.MULTI_LINE_STYLE));
 		User user = new User();
 		user.setUserId(token.getUsername());
-		user.setUserToken(String.valueOf(token.getPassword()));
-		System.out.println(user);
-		return new SimpleAuthenticationInfo(user, user.getUserToken(), user.getUserId());
+		user.setToken(String.valueOf(token.getPassword()));
+		return new SimpleAuthenticationInfo(user, user.getToken(), user.getUserId());
 	}
 
-	/**
-	 * 将一些数据放到ShiroSession中,以便于其它地方使用
-	 *
-	 * @see 比如Controller,使用时直接用HttpSession.getAttribute(key)就可以取到
-	 */
-	private void setSession(Object key, Object value) {
-		Subject currentUser = SecurityUtils.getSubject();
-		if (null != currentUser) {
-			Session session = currentUser.getSession();
-			System.out.println("Session默认超时时间为[" + session.getTimeout() + "]毫秒");
-			if (null != session) {
-				session.setAttribute(key, value);
-			}
-		}
-	}
+	// /**
+	// * 将一些数据放到ShiroSession中,以便于其它地方使用
+	// *
+	// * @see 比如Controller,使用时直接用HttpSession.getAttribute(key)就可以取到
+	// */
+	// private void setSession(Object key, Object value) {
+	// Subject currentUser = SecurityUtils.getSubject();
+	// if (null != currentUser) {
+	// Session session = currentUser.getSession();
+	// System.out.println("Session默认超时时间为[" + session.getTimeout() + "]毫秒");
+	// if (null != session) {
+	// session.setAttribute(key, value);
+	// }
+	// }
+	// }
 
 }

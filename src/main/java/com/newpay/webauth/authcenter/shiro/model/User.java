@@ -23,6 +23,6 @@ public class User implements Serializable {
 
 	private String userId;
 
-	private String userToken;
+	private String token;
 
 }

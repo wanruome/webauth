@@ -148,6 +148,30 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 		}
 	}
 
+	public String getTokenById(String tokenId, String userId, String appId) {
+		LoginUserToken loginUserToken = new LoginUserToken();
+		loginUserToken.setTokenId(tokenId);
+		// loginUserToken.setAppId(appId);
+		// loginUserToken.setTokenId(tokenId);
+		LoginUserToken resultUserToken = loginUserTokenMapper.selectByPrimaryKey(loginUserToken);
+		if (null == resultUserToken || resultUserToken.getLoginStatus() != 1) {
+			return null;
+		}
+		else if (!resultUserToken.getUserId().equals(userId)) {
+			return null;
+		}
+		else if (!resultUserToken.getAppId().equals(appId)) {
+			return null;
+		}
+		String nowTimeStr = AppConfig.SDF_DB_VERSION.format(new Date());
+		if (nowTimeStr.compareTo(resultUserToken.getValidTime()) > 0) {
+			return null;
+		}
+		else {
+			return resultUserToken.getToken();
+		}
+	}
+
 	@Override
 	public JSONObject distoryTokenForLogout(String userId, String appId, String termType) {
 		// TODO Auto-generated method stub
