@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.newpay.webauth.config.PropertyUtil;
 import com.newpay.webauth.dal.core.PwdRequestParse;
+import com.newpay.webauth.dal.request.userinfo.UserInfoFindPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
@@ -50,13 +51,6 @@ public class UserAccoutController {
 		// if (StringUtils.isBlank(userInfoRegister.getPwdEncrypt())) {
 		// userInfoRegister.setPwdEncrypt(AppConfig.UserPwdEncryptDefault);
 		// }
-		// 验证在parseRequsetPwd里面进行了
-		// if (StringUtils.isBlank(userInfoRegister.getPwd()) ||
-		// StringUtils.isBlank(userInfoRegister.getUuid())) {
-		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
-		//
-		// }
-
 		PwdRequestParse pwdParse = pwdService.parseRequsetPwd(userInfoRegister.getPwd(),
 				userInfoRegister.getPwdEncrypt(), userInfoRegister.getUuid(), true);
 		if (!pwdParse.isValid()) {
@@ -90,9 +84,6 @@ public class UserAccoutController {
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return ResultFactory.toNackPARAM();
 		}
-		// if (!pwdService.isEncryptTypeOk(userInfoModifyPwd.getPwdEncrypt())) {
-		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
-		// }
 		PwdRequestParse oldPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getOldPwd(),
 				userInfoModifyPwd.getOldPwdEncrypt(), userInfoModifyPwd.getUuid(), false);
 		PwdRequestParse newPwdParse = pwdService.parseRequsetPwd(userInfoModifyPwd.getNewPwd(),
@@ -104,6 +95,9 @@ public class UserAccoutController {
 		if (!oldPwdParse.isValid()) {
 			return newPwdParse.getReturnResp();
 		}
+		if (newPwdParse.getPwdParse().equals(oldPwdParse.getPwdParse())) {
+			return ResultFactory.toNackCORE("新密码不能和旧密码一致");
+		}
 		userInfoModifyPwd.setNewPwd(newPwdParse.getPwdParse());
 		userInfoModifyPwd.setOldPwd(oldPwdParse.getPwdParse());
 		// 验证密码解密
@@ -112,8 +106,17 @@ public class UserAccoutController {
 
 	@ApiOperation("找回密码")
 	@PostMapping("/doFindPwd")
-	public Object doFindPwd(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
-		return null;
+	public Object doFindPwd(@Valid @RequestBody UserInfoFindPwd userInfoFindPwd, BindingResult bindingResult) {
+		if (null == bindingResult || bindingResult.hasErrors()) {
+			return ResultFactory.toNackPARAM();
+		}
+		PwdRequestParse oldPwdParse = pwdService.parseRequsetPwd(userInfoFindPwd.getNewPwd(),
+				userInfoFindPwd.getNewPwdEncrypt(), userInfoFindPwd.getUuid(), true);
+		if (!oldPwdParse.isValid()) {
+			return oldPwdParse.getReturnResp();
+		}
+		userInfoFindPwd.setNewPwd(oldPwdParse.getPwdParse());
+		return userAccountService.doFindPwd(userInfoFindPwd);
 	}
 
 	@ApiOperation("修改手机号")

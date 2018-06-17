@@ -482,7 +482,7 @@ public class FileUtils {
 	 * @return
 	 */
 	public static String getFileExtension(String filePath) {
-		if (StringUtils.isBlank(filePath)) {
+		if (StringUtils.isEmpty(filePath)) {
 			return filePath;
 		}
 

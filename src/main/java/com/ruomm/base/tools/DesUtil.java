@@ -172,7 +172,7 @@ public abstract class DesUtil {
 	public static String decryptString(String data, String key, String charsetName) {
 		String dataDes = null;
 		try {
-			String charset = StringUtils.isBlank(charsetName) ? "UTF-8" : charsetName;
+			String charset = StringUtils.isEmpty(charsetName) ? "UTF-8" : charsetName;
 			// 还原密钥
 			Key k = toKey(Base64.decode(key));
 			Cipher cipher;
@@ -210,7 +210,7 @@ public abstract class DesUtil {
 	public static String encryptString(String data, String key, String charsetName) {
 		String dataDes = null;
 		try {
-			String charset = StringUtils.isBlank(charsetName) ? "UTF-8" : charsetName;
+			String charset = StringUtils.isEmpty(charsetName) ? "UTF-8" : charsetName;
 			// 还原密钥
 			Key k = toKey(Base64.decode(key));
 			/**

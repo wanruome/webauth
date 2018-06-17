@@ -64,15 +64,74 @@ public class MsgSendServiceImpl implements MsgSendService {
 
 	}
 
+	public int getRemindCount(MsgSendReqDto msgSendReqDto, MsgFunctionInfo msgFunctionInfo, boolean isMobile) {
+		int limit = 1000;
+		String dateStr = AppConfig.SDF_DB_DATE.format(new Date());
+		if (AppConfig.MSGSEND_LIMITCOUNT_MOBILE > 0 & isMobile) {
+
+			MsgSendInfo queryMsgInfo = new MsgSendInfo();
+			queryMsgInfo.setMsgAddr(msgSendReqDto.getMsgAddr());
+			queryMsgInfo.setCreateDate(dateStr);
+			int countSend = msgSendInfoMapper.selectCount(queryMsgInfo);
+			int countRemind = AppConfig.MSGSEND_LIMITCOUNT_MOBILE - countSend;
+			if (limit > countRemind) {
+				limit = countRemind;
+			}
+		}
+		if (limit < 1) {
+			return limit;
+		}
+		if (AppConfig.MSGSEND_LIMITCOUNT_EMAIL > 0 & !isMobile) {
+			MsgSendInfo queryMsgInfo = new MsgSendInfo();
+			queryMsgInfo.setMsgAddr(msgSendReqDto.getMsgAddr());
+			queryMsgInfo.setCreateDate(dateStr);
+			int countSend = msgSendInfoMapper.selectCount(queryMsgInfo);
+			int countRemind = AppConfig.MSGSEND_LIMITCOUNT_EMAIL - countSend;
+			if (limit > countRemind) {
+				limit = countRemind;
+			}
+		}
+		if (limit < 1) {
+			return limit;
+		}
+		if (AppConfig.MSGSEND_LIMITCOUNT_UUID > 0) {
+			MsgSendInfo queryMsgInfo = new MsgSendInfo();
+			queryMsgInfo.setUuid(msgSendReqDto.getUuid());
+			queryMsgInfo.setCreateDate(dateStr);
+			int countSend = msgSendInfoMapper.selectCount(queryMsgInfo);
+			int countRemind = AppConfig.MSGSEND_LIMITCOUNT_UUID - countSend;
+			if (limit > countRemind) {
+				limit = countRemind;
+			}
+		}
+		if (limit < 1) {
+			return limit;
+		}
+		if (AppConfig.MSGSEND_LIMITCOUNT_USER > 0
+				&& (msgFunctionInfo.getAuthType() == 1 || msgFunctionInfo.getAuthType() == 2)) {
+			MsgSendInfo queryMsgInfo = new MsgSendInfo();
+			queryMsgInfo.setUserId(msgSendReqDto.getUserId());
+			queryMsgInfo.setCreateDate(dateStr);
+			int countSend = msgSendInfoMapper.selectCount(queryMsgInfo);
+			int countRemind = AppConfig.MSGSEND_LIMITCOUNT_USER - countSend;
+			if (limit > countRemind) {
+				limit = countRemind;
+			}
+		}
+		return limit;
+	}
+
 	public Object doSendMsgAuthType2(MsgSendReqDto msgSendReqDto, MsgFunctionInfo msgFunctionInfo) {
+
 		boolean isEmail = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.EMAILS);
 		boolean isMobile = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.MOBILE_NUM);
 		if (!isEmail && !isMobile) {
 			return ResultFactory.toNackPARAM();
 		}
 
-		if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())
-				|| StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())) {
+		if (StringUtils.isEmpty(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())
+				|| StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())
+				|| StringUtils.isEmpty(msgSendReqDto.getSignInfo())) {
 			return ResultFactory.toNackPARAM();
 		}
 		if (!StringUtils.isEmpty(msgSendReqDto.getMsgToken())) {
@@ -82,7 +141,6 @@ public class MsgSendServiceImpl implements MsgSendService {
 		if (null == msgFunctionInfoTo || msgFunctionInfoTo.getAuthType() != 1) {
 			return ResultFactory.toNackPARAM();
 		}
-
 		String msgUUID = msgSendReqDto.getUserId();
 		boolean isSameToUserInfoAddr = false;
 		// 若是手机或邮箱和用户的手机号邮箱不同，需要先获取对应功能的msgToken才能往不同的手机或邮箱发送验证码
@@ -102,6 +160,16 @@ public class MsgSendServiceImpl implements MsgSendService {
 		if (!isSameToUserInfoAddr) {
 			return ResultFactory.toNackCORE("只能往登录的账户上面发送验证码");
 		}
+		// 校验验证码使用次数
+		int limitCount = getRemindCount(msgSendReqDto, msgFunctionInfo, isMobile);
+		if (limitCount < 1) {
+			if (isMobile) {
+				return ResultFactory.toNackCORE("今日短信验证码次数已经用完");
+			}
+			else {
+				return ResultFactory.toNackCORE("今日邮箱验证码次数已经用完");
+			}
+		}
 		// 写入记录表
 		String msgId = dbSeqService.getMsgInfoNewPk();
 		String functionId = msgFunctionInfo.getFunctionId();
@@ -117,7 +185,8 @@ public class MsgSendServiceImpl implements MsgSendService {
 		String createTime = AppConfig.SDF_DB_VERSION.format(nowDate);
 		MsgSendInfo msgSendInfo = new MsgSendInfo();
 		msgSendInfo.setMsgId(msgId);
-		msgSendInfo.setUserId(msgUUID);
+		msgSendInfo.setUserId(msgSendReqDto.getUserId());
+		msgSendInfo.setUuid(msgSendReqDto.getUuid());
 		msgSendInfo.setFunctionId(functionId);
 		msgSendInfo.setMsgType(msgType);
 		if (isSameToUserInfoAddr && msgFunctionInfo.getAuthType() == 2) {
@@ -160,7 +229,9 @@ public class MsgSendServiceImpl implements MsgSendService {
 			return ResultFactory.toNackDB();
 		}
 		else {
-			return ResultFactory.toAck(null);
+			Map<String, String> resultData = new HashMap<>();
+			resultData.put("limitCount", limitCount - 1 + "");
+			return ResultFactory.toAck(resultData);
 		}
 	}
 
@@ -171,7 +242,8 @@ public class MsgSendServiceImpl implements MsgSendService {
 			return ResultFactory.toNackPARAM();
 		}
 
-		if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())) {
+		if (StringUtils.isEmpty(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())
+				|| StringUtils.isEmpty(msgSendReqDto.getSignInfo())) {
 			return ResultFactory.toNackPARAM();
 		}
 		if (!StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())) {
@@ -220,6 +292,16 @@ public class MsgSendServiceImpl implements MsgSendService {
 				}
 			}
 		}
+		// 校验验证码使用次数
+		int limitCount = getRemindCount(msgSendReqDto, msgFunctionInfo, isMobile);
+		if (limitCount < 1) {
+			if (isMobile) {
+				return ResultFactory.toNackCORE("今日短信验证码次数已经用完");
+			}
+			else {
+				return ResultFactory.toNackCORE("今日邮箱验证码次数已经用完");
+			}
+		}
 		// 写入记录表
 		String msgId = dbSeqService.getMsgInfoNewPk();
 		String functionId = msgFunctionInfo.getFunctionId();
@@ -235,7 +317,8 @@ public class MsgSendServiceImpl implements MsgSendService {
 		String createTime = AppConfig.SDF_DB_VERSION.format(nowDate);
 		MsgSendInfo msgSendInfo = new MsgSendInfo();
 		msgSendInfo.setMsgId(msgId);
-		msgSendInfo.setUserId(msgUUID);
+		msgSendInfo.setUserId(msgSendReqDto.getUserId());
+		msgSendInfo.setUuid(msgSendReqDto.getUuid());
 		msgSendInfo.setFunctionId(functionId);
 		msgSendInfo.setMsgType(msgType);
 		if (isSameToUserInfoAddr && msgFunctionInfo.getAuthType() == 2) {
@@ -278,7 +361,9 @@ public class MsgSendServiceImpl implements MsgSendService {
 			return ResultFactory.toNackDB();
 		}
 		else {
-			return ResultFactory.toAck(null);
+			Map<String, String> resultData = new HashMap<>();
+			resultData.put("limitCount", limitCount - 1 + "");
+			return ResultFactory.toAck(resultData);
 		}
 	}
 
@@ -294,7 +379,16 @@ public class MsgSendServiceImpl implements MsgSendService {
 			return ResultFactory.toNackPARAM();
 		}
 		String msgUUID = msgSendReqDto.getUuid();
-
+		// 校验验证码使用次数
+		int limitCount = getRemindCount(msgSendReqDto, msgFunctionInfo, isMobile);
+		if (limitCount < 1) {
+			if (isMobile) {
+				return ResultFactory.toNackCORE("今日短信验证码次数已经用完");
+			}
+			else {
+				return ResultFactory.toNackCORE("今日邮箱验证码次数已经用完");
+			}
+		}
 		// 写入记录表
 		String msgId = dbSeqService.getMsgInfoNewPk();
 		String userId = msgSendReqDto.getUserId();
@@ -310,7 +404,8 @@ public class MsgSendServiceImpl implements MsgSendService {
 		String createTime = AppConfig.SDF_DB_VERSION.format(nowDate);
 		MsgSendInfo msgSendInfo = new MsgSendInfo();
 		msgSendInfo.setMsgId(msgId);
-		msgSendInfo.setUserId(msgUUID);
+		msgSendInfo.setUserId(msgSendReqDto.getUserId());
+		msgSendInfo.setUuid(msgSendReqDto.getUuid());
 		msgSendInfo.setFunctionId(functionId);
 		msgSendInfo.setMsgType(msgType);
 		msgSendInfo.setMsgAddr(msgAddr);
@@ -351,7 +446,9 @@ public class MsgSendServiceImpl implements MsgSendService {
 			return ResultFactory.toNackDB();
 		}
 		else {
-			return ResultFactory.toAck(null);
+			Map<String, String> resultData = new HashMap<>();
+			resultData.put("limitCount", limitCount - 1 + "");
+			return ResultFactory.toAck(resultData);
 		}
 	}
 

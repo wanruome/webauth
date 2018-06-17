@@ -205,7 +205,7 @@ public class PwdServiceImpl implements PwdService {
 		// TODO Auto-generated method stub
 		PwdRequestParse pwdParse = new PwdRequestParse();
 		pwdParse.setValid(false);
-		if (StringUtils.isBlank(pwdRequest) || StringUtils.isBlank(pwdUuid)) {
+		if (StringUtils.isBlank(pwdRequest) || StringUtils.isEmpty(pwdUuid)) {
 			pwdParse.setValid(false);
 			pwdParse.setReturnResp(ResultFactory.toNackPARAM());
 			return pwdParse;

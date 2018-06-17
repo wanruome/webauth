@@ -17,6 +17,7 @@ import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.core.TokenResponseParse;
 import com.newpay.webauth.dal.mapper.LoginUserAccountMapper;
 import com.newpay.webauth.dal.model.LoginUserAccount;
+import com.newpay.webauth.dal.request.userinfo.UserInfoFindPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
@@ -110,7 +111,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		else {
 			return ResultFactory.toNackPARAM();
 		}
-		if (!StringUtils.isBlank(loginUserReqDto.getMobie())) {
+		if (!StringUtils.isEmpty(loginUserReqDto.getMobie())) {
 			if (!RegexUtil.doRegex(loginUserReqDto.getMobie(), RegexUtil.MOBILE_NUM)) {
 				return ResultFactory.toNackPARAM();
 			}
@@ -125,7 +126,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 			insertUserAccount.setLoginMobile(loginUserReqDto.getMobie());
 		}
 		// 验证邮箱是否有效
-		if (!StringUtils.isBlank(loginUserReqDto.getEmail())) {
+		if (!StringUtils.isEmpty(loginUserReqDto.getEmail())) {
 			if (!RegexUtil.doRegex(loginUserReqDto.getEmail(), RegexUtil.EMAILS)) {
 				return ResultFactory.toNackPARAM();
 			}
@@ -140,7 +141,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 			insertUserAccount.setLoginEmail(loginUserReqDto.getEmail());
 		}
 		// 验证用户名是否有效
-		if (!StringUtils.isBlank(loginUserReqDto.getName())) {
+		if (!StringUtils.isEmpty(loginUserReqDto.getName())) {
 			if (!RegexUtil.doRegex(loginUserReqDto.getName(), RegexUtil.APP_LOGIN_NAME)) {
 				return ResultFactory.toNackPARAM();
 			}
@@ -192,6 +193,38 @@ public class UserAccountServiceImpl implements UserAccountService {
 	}
 
 	@Override
+	public Object doFindPwd(UserInfoFindPwd userInfoFindPwd) {
+		// TODO Auto-generated method stub
+		LoginUserAccount queryUserAccount = new LoginUserAccount();
+		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(userInfoFindPwd.getAccountType())) {
+			queryUserAccount.setLoginMobile(userInfoFindPwd.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_EMAIL.equals(userInfoFindPwd.getAccountType())) {
+			queryUserAccount.setLoginEmail(userInfoFindPwd.getAccount());
+		}
+		else {
+			return ResultFactory.toNackPARAM();
+		}
+		LoginUserAccount dbLoginUserAccount = loginUserAccountMapper.selectOne(queryUserAccount);
+		if (null == dbLoginUserAccount || dbLoginUserAccount.getStatus() != 1) {
+			return ResultFactory.toNackCORE("账户不存在");
+		}
+		if (dbLoginUserAccount.getStatus() != 1) {
+			return ResultFactory.toNackCORE("账户已停用");
+		}
+		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginId(dbLoginUserAccount.getLoginId());
+		updateUserAccount.setLoginPwd(userInfoFindPwd.getNewPwd());
+		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
+		if (dbFlag) {
+			return ResultFactory.toAck(null);
+		}
+		else {
+			return ResultFactory.toNackDB();
+		}
+	}
+
+	@Override
 	public Object doModifyMobile(UserInfoModifyMobie userInfoModifyMobie) {
 		// TODO Auto-generated method stub
 		if (VERIFY_IN_DB) {
@@ -199,14 +232,18 @@ public class UserAccountServiceImpl implements UserAccountService {
 			queryUserAccount.setLoginMobile(userInfoModifyMobie.getNewMobile());
 			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
-				return ResultFactory.toNackCORE("手机号已经被注册了");
+				if (userInfoModifyMobie.getUserId().equals(lstResult.get(0).getLoginId())) {
+					return ResultFactory.toNackCORE("新手机号不能和旧手机号相同");
+				}
+				else {
+					return ResultFactory.toNackCORE("手机号已经被注册了");
+				}
 			}
 		}
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyMobie.getUserId());
 		if (null == dbLoginUserAccount) {
 			return ResultFactory.toNackCORE("用户不存在");
 		}
-		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
 		updateUserAccount.setLoginId(userInfoModifyMobie.getUserId());
 		updateUserAccount.setLoginMobile(userInfoModifyMobie.getNewMobile());
@@ -229,7 +266,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 			queryUserAccount.setLoginEmail(userInfoModifyEmail.getNewEmail());
 			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
-				return ResultFactory.toNackCORE("邮箱已经被注册了");
+				if (userInfoModifyEmail.getUserId().equals(lstResult.get(0).getLoginId())) {
+					return ResultFactory.toNackCORE("新邮箱不能和旧邮箱相同");
+				}
+				else {
+					return ResultFactory.toNackCORE("邮箱已经被注册了");
+				}
 			}
 		}
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyEmail.getUserId());
@@ -259,7 +301,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 			queryUserAccount.setLoginName(userInfoModifyName.getNewName());
 			List<LoginUserAccount> lstResult = loginUserAccountMapper.select(queryUserAccount);
 			if (null != lstResult && lstResult.size() > 0) {
-				return ResultFactory.toNackCORE("用户名已经被注册了");
+				if (userInfoModifyName.getUserId().equals(lstResult.get(0).getLoginId())) {
+					return ResultFactory.toNackCORE("新用户名不能和旧用户名相同");
+				}
+				else {
+					return ResultFactory.toNackCORE("用户名已经被注册了");
+				}
 			}
 		}
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyName.getUserId());

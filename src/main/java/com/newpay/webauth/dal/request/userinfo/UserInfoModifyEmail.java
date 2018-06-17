@@ -17,10 +17,14 @@ public class UserInfoModifyEmail {
 	@NotEmpty
 	private String userId;
 	@NotEmpty
+	private String appId;
+	@NotEmpty
+	private String tokenId;
+	@NotEmpty
+	private String signInfo;
+	@NotEmpty
+	private String msgVerifyCode;
+	@NotEmpty
 	@Pattern(regexp = RegexUtil.EMAILS)
 	private String newEmail;
-	@NotEmpty
-	private String verifyCode;
-	@NotEmpty
-	private String authToken;
 }

@@ -16,15 +16,17 @@ import lombok.Data;
 @Data
 public class UserInfoModifyMobie {
 	@NotEmpty
-	@JSONField(name = "userId")
 	private String userId;
+	@NotEmpty
+	private String appId;
+	@NotEmpty
+	private String tokenId;
+	@NotEmpty
+	private String signInfo;
+	@NotEmpty
+	private String msgVerifyCode;
 	@NotEmpty
 	@Pattern(regexp = RegexUtil.MOBILE_NUM)
 	@JSONField(name = "newMobile")
 	private String newMobile;
-	@JSONField(name = "msgVerifyCode")
-	private String msgVerifyCode;
-	@NotEmpty
-	@JSONField(name = "authToken")
-	private String authToken;
 }

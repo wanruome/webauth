@@ -31,16 +31,16 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 
 	@Override
 	public Object getPublicKeyByUuid(UuidKeyPairReqDto uuidKeyPairReqDto) {
-		if (StringUtils.isBlank(uuidKeyPairReqDto.getUuid())) {
+		if (StringUtils.isEmpty(uuidKeyPairReqDto.getUuid())) {
 			return ResultFactory.toNackPARAM();
 		}
 		// if (StringUtils.getLength(uuidKeyPairReqDto.getUuid()) < 32) {
 		// return BaseReturn.toFAIL(BaseReturn.ERROR_CODE_PRARM);
 		// }
 		// 转换默认秘钥
-		if (StringUtils.isBlank(uuidKeyPairReqDto.getKeyType())) {
-			uuidKeyPairReqDto.setKeyType(AppConfig.UserPwdEncryptDefault);
-		}
+		// if (StringUtils.isBlank(uuidKeyPairReqDto.getKeyType())) {
+		// uuidKeyPairReqDto.setKeyType(AppConfig.UserPwdEncryptDefault);
+		// }
 		String uuid = uuidKeyPairReqDto.getUuid();
 		String keyType = null;
 		if (uuidKeyPairReqDto.getKeyType().equals(AppConfig.PWD_ENCRYPT_RSA)
@@ -128,7 +128,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 		else {
 			// 加入传输安全选项
 			String tmpString = null;
-			if (!StringUtils.isBlank(uuidKeyPairReqDto.getRasPublicKey())
+			if (!StringUtils.isEmpty(uuidKeyPairReqDto.getRasPublicKey())
 					&& keyType.equals(AppConfig.PWD_ENCRYPT_3DES)) {
 				PublicKey publicKey = RSAUtils.loadPublicKey(uuidKeyPairReqDto.getRasPublicKey());
 				tmpString = Base64.encode(RSAUtils.encryptData(returnKeyPair.getPublicKey().getBytes(), publicKey));
@@ -136,7 +136,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 			else {
 				tmpString = returnKeyPair.getPublicKey();
 			}
-			if (StringUtils.isBlank(tmpString)) {
+			if (StringUtils.isEmpty(tmpString)) {
 				return ResultFactory.toNackDB();
 			}
 

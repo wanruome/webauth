@@ -19,6 +19,8 @@ public class MsgSendInfo {
 	private String msgId;
 	@Column(name = "USER_ID")
 	private String userId;
+	@Column(name = "UUID")
+	private String uuid;
 	@Column(name = "FUNCTION_ID")
 	private String functionId;
 	@Column(name = "MSG_TYPE")

@@ -17,10 +17,13 @@ public class UserInfoModifyName {
 	@NotEmpty
 	private String userId;
 	@NotEmpty
+	private String appId;
+	@NotEmpty
+	private String tokenId;
+	@NotEmpty
+	private String signInfo;
+	private String msgVerifyCode;
+	@NotEmpty
 	@Pattern(regexp = RegexUtil.APP_LOGIN_NAME)
 	private String newName;
-	@NotEmpty
-	private String verifyCode;
-	@NotEmpty
-	private String authToken;
 }

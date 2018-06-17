@@ -17,11 +17,11 @@ import com.ruomm.base.tools.StringUtils;
 
 public class SignTools {
 	public static boolean verifySign(JSONObject jsonObject, String token) {
-		if (StringUtils.isBlank(token) || null == jsonObject) {
+		if (StringUtils.isEmpty(token) || null == jsonObject) {
 			return false;
 		}
 		String signInfo = jsonObject.getString(AppConfig.REQUEST_FIELD_SIGN_INFO);
-		if (StringUtils.isBlank(signInfo)) {
+		if (StringUtils.isEmpty(signInfo)) {
 			return false;
 		}
 		jsonObject.remove(AppConfig.REQUEST_FIELD_SIGN_INFO);

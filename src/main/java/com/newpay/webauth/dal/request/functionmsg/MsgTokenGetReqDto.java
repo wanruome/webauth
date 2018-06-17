@@ -14,7 +14,11 @@ public class MsgTokenGetReqDto {
 	@NotEmpty
 	private String userId;
 	@NotEmpty
+	private String appId;
+	@NotEmpty
 	private String tokenId;
+	@NotEmpty
+	private String signInfo;
 	@NotEmpty
 	private String msgAddr;
 	@NotEmpty

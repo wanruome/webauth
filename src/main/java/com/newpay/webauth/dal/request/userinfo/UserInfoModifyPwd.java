@@ -12,13 +12,20 @@ import lombok.Data;
 @Data
 public class UserInfoModifyPwd {
 	@NotEmpty
+	private String uuid;
+	@NotEmpty
 	private String userId;
+	@NotEmpty
+	private String appId;
+	@NotEmpty
+	private String tokenId;
+	@NotEmpty
+	private String signInfo;
+	private String msgVerifyCode;
 	@NotEmpty
 	private String newPwd;
 	@NotEmpty
 	private String oldPwd;
-	@NotEmpty
-	private String uuid;
 	private String newPwdEncrypt;
 	private String oldPwdEncrypt;
 }

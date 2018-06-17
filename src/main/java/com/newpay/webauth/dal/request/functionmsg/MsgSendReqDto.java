@@ -11,9 +11,10 @@ import lombok.Data;
 
 @Data
 public class MsgSendReqDto {
+	private String appId;
 	private String userId;
 	private String tokenId;
-
+	private String signInfo;
 	@NotEmpty
 	private String uuid;
 	@NotEmpty

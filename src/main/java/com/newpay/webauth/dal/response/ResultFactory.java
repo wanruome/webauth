@@ -132,9 +132,9 @@ public class ResultFactory {
 	// }
 
 	private static JSONObject createResponse(String code, String msg, Object data, boolean isOneRoot) {
-		String realCode = StringUtils.isBlank(code) ? ERR_UNKNOWN : code;
+		String realCode = StringUtils.isEmpty(code) ? ERR_UNKNOWN : code;
 		String realMsg = null;
-		if (StringUtils.isBlank(msg)) {
+		if (StringUtils.isEmpty(msg)) {
 			if (realCode.equals(SUCESS_CODE)) {
 				realMsg = "OK";
 			}
