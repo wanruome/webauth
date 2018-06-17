@@ -178,6 +178,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 			return ResultFactory.toNackCORE("旧的密码不正确");
 		}
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginId(userInfoModifyPwd.getUserId());
 		updateUserAccount.setLoginPwd(userInfoModifyPwd.getNewPwd());
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
@@ -207,6 +208,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		}
 		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginId(userInfoModifyMobie.getUserId());
 		updateUserAccount.setLoginMobile(userInfoModifyMobie.getNewMobile());
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
@@ -236,6 +238,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		}
 		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginId(userInfoModifyEmail.getUserId());
 		updateUserAccount.setLoginEmail(userInfoModifyEmail.getNewEmail());
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
@@ -265,6 +268,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		}
 		// 验证authToken是否有效
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
+		updateUserAccount.setLoginId(userInfoModifyName.getUserId());
 		updateUserAccount.setLoginName(userInfoModifyName.getNewName());
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {

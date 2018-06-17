@@ -49,83 +49,61 @@ public class MsgSendServiceImpl implements MsgSendService {
 		if (null == msgFunctionInfo) {
 			return ResultFactory.toNackPARAM();
 		}
+		if (msgFunctionInfo.getAuthType() == 0) {
+			return doSendMsgAuthType0(msgSendReqDto, msgFunctionInfo);
+		}
+		else if (msgFunctionInfo.getAuthType() == 1) {
+			return doSendMsgAuthType1(msgSendReqDto, msgFunctionInfo);
+		}
+		else if (msgFunctionInfo.getAuthType() == 2) {
+			return doSendMsgAuthType2(msgSendReqDto, msgFunctionInfo);
+		}
+		else {
+			return ResultFactory.toNackPARAM();
+		}
+
+	}
+
+	public Object doSendMsgAuthType2(MsgSendReqDto msgSendReqDto, MsgFunctionInfo msgFunctionInfo) {
 		boolean isEmail = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.EMAILS);
 		boolean isMobile = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.MOBILE_NUM);
 		if (!isEmail && !isMobile) {
 			return ResultFactory.toNackPARAM();
 		}
-		if (msgFunctionInfo.getAuthType() == 0) {
-			if (!StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())
-					|| !StringUtils.isEmpty(msgSendReqDto.getMsgToken())
-					|| !StringUtils.isEmpty(msgSendReqDto.getUserId())
-					|| !StringUtils.isEmpty(msgSendReqDto.getTokenId())) {
-				return ResultFactory.toNackPARAM();
-			}
-		}
-		else if (msgFunctionInfo.getAuthType() == 1) {
-			if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())) {
-				return ResultFactory.toNackPARAM();
-			}
-			if (!StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())) {
-				return ResultFactory.toNackPARAM();
-			}
-		}
-		else if (msgFunctionInfo.getAuthType() == 2) {
-			if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())
-					|| StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())) {
-				return ResultFactory.toNackPARAM();
-			}
-			if (!StringUtils.isEmpty(msgSendReqDto.getMsgToken())) {
-				return ResultFactory.toNackPARAM();
-			}
-			MsgFunctionInfo msgFunctionInfoTo = MsgFunctionConfig.getMsgFuntionInfo(msgSendReqDto.getMsgFunctionTo());
-			if (null == msgFunctionInfoTo || msgFunctionInfoTo.getAuthType() != 1) {
-				return ResultFactory.toNackPARAM();
-			}
-		}
-		else {
+
+		if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())
+				|| StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())) {
 			return ResultFactory.toNackPARAM();
 		}
-		MsgAuthInfo tokenMsgAuthInfo = null;
-		String msgUUID = msgFunctionInfo.getAuthType() == 0 ? msgSendReqDto.getUuid() : msgSendReqDto.getUserId();
+		if (!StringUtils.isEmpty(msgSendReqDto.getMsgToken())) {
+			return ResultFactory.toNackPARAM();
+		}
+		MsgFunctionInfo msgFunctionInfoTo = MsgFunctionConfig.getMsgFuntionInfo(msgSendReqDto.getMsgFunctionTo());
+		if (null == msgFunctionInfoTo || msgFunctionInfoTo.getAuthType() != 1) {
+			return ResultFactory.toNackPARAM();
+		}
+
+		String msgUUID = msgSendReqDto.getUserId();
 		boolean isSameToUserInfoAddr = false;
 		// 若是手机或邮箱和用户的手机号邮箱不同，需要先获取对应功能的msgToken才能往不同的手机或邮箱发送验证码
-		if (msgFunctionInfo.getAuthType() == 1 || msgFunctionInfo.getAuthType() == 2) {
-			LoginUserAccount queryUserAccount = new LoginUserAccount();
-			queryUserAccount.setLoginId(msgSendReqDto.getUserId());
-			queryUserAccount.setStatus(1);
-			LoginUserAccount resultUserAccout = loginUserAccountMapper.selectOne(queryUserAccount);
-			if (null == resultUserAccout) {
-				return ResultFactory.toNackCORE("用户不存在");
-			}
-			if (isEmail) {
-				isSameToUserInfoAddr = msgSendReqDto.getMsgAddr().equals(resultUserAccout.getLoginEmail());
-			}
-			if (isMobile) {
-				isSameToUserInfoAddr = msgSendReqDto.getMsgAddr().equals(resultUserAccout.getLoginMobile());
-			}
-			if (!isSameToUserInfoAddr) {
-
-				if (msgFunctionInfo.getAuthType() == 2) {
-					return ResultFactory.toNackCORE("只能往登录的账户上面发送验证码");
-				}
-				if (StringUtils.isEmpty(msgSendReqDto.getMsgToken())) {
-					return ResultFactory.toNackCORE("无权往其他账户上面发送验证码");
-				}
-				MsgAuthInfo queryMsgAuthInfo = new MsgAuthInfo();
-				queryMsgAuthInfo.setUuid(msgUUID);
-				queryMsgAuthInfo.setMsgToken(msgSendReqDto.getMsgToken());
-				queryMsgAuthInfo.setFunctionToId(msgSendReqDto.getMsgFunction());
-				tokenMsgAuthInfo = msgAuthInfoMapper.selectOne(queryMsgAuthInfo);
-				if (null == tokenMsgAuthInfo) {
-					return ResultFactory.toNackCORE("无权往其他账户上面发送验证码");
-				}
-			}
-
+		LoginUserAccount queryUserAccount = new LoginUserAccount();
+		queryUserAccount.setLoginId(msgSendReqDto.getUserId());
+		queryUserAccount.setStatus(1);
+		LoginUserAccount resultUserAccout = loginUserAccountMapper.selectOne(queryUserAccount);
+		if (null == resultUserAccout) {
+			return ResultFactory.toNackCORE("用户不存在");
+		}
+		if (isEmail) {
+			isSameToUserInfoAddr = msgSendReqDto.getMsgAddr().equals(resultUserAccout.getLoginEmail());
+		}
+		if (isMobile) {
+			isSameToUserInfoAddr = msgSendReqDto.getMsgAddr().equals(resultUserAccout.getLoginMobile());
+		}
+		if (!isSameToUserInfoAddr) {
+			return ResultFactory.toNackCORE("只能往登录的账户上面发送验证码");
 		}
 		// 写入记录表
 		String msgId = dbSeqService.getMsgInfoNewPk();
-		String userId = msgSendReqDto.getUserId();
 		String functionId = msgFunctionInfo.getFunctionId();
 		int msgType = isMobile ? 1 : 2;
 		String msgCode = MsgFunctionConfig.generateVerifyCode();
@@ -139,7 +117,7 @@ public class MsgSendServiceImpl implements MsgSendService {
 		String createTime = AppConfig.SDF_DB_VERSION.format(nowDate);
 		MsgSendInfo msgSendInfo = new MsgSendInfo();
 		msgSendInfo.setMsgId(msgId);
-		msgSendInfo.setUserId(userId);
+		msgSendInfo.setUserId(msgUUID);
 		msgSendInfo.setFunctionId(functionId);
 		msgSendInfo.setMsgType(msgType);
 		if (isSameToUserInfoAddr && msgFunctionInfo.getAuthType() == 2) {
@@ -158,12 +136,197 @@ public class MsgSendServiceImpl implements MsgSendService {
 		}
 
 		MsgAuthInfo msgAuthInfo = new MsgAuthInfo();
-		if (msgFunctionInfo.getAuthType() == 0) {
-			msgAuthInfo.setUuid(msgSendReqDto.getUuid());
+		msgAuthInfo.setUuid(msgUUID);
+		msgAuthInfo.setMsgAddr(msgAddr);
+		msgAuthInfo.setFunctionId(functionId);
+		msgAuthInfo.setSessionTokenId(msgSendReqDto.getTokenId());
+		msgAuthInfo.setMsgCode(msgCode);
+		msgAuthInfo.setMsgValidTime(msgValidTime);
+		msgAuthInfo.setMsgStatus(1);
+		msgAuthInfo.setFunctionToId(msgSendReqDto.getMsgFunctionTo());
+		msgAuthInfo.setMsgToken(msgToken);
+		MsgAuthInfo resultMsgAuthInfo = msgAuthInfoMapper.selectByPrimaryKey(msgAuthInfo);
+		if (null == resultMsgAuthInfo) {
+			// 写入认证表
+			msgAuthInfo.setVersion(0);
+			dbResult = msgAuthInfoMapper.insertSelective(msgAuthInfo);
 		}
 		else {
-			msgAuthInfo.setUuid(msgSendReqDto.getUserId());
+			msgAuthInfo.setVersion(resultMsgAuthInfo.getVersion());
+			dbResult = msgAuthInfoMapper.updateByPrimaryKey(msgAuthInfo);
 		}
+
+		if (dbResult <= 0) {
+			return ResultFactory.toNackDB();
+		}
+		else {
+			return ResultFactory.toAck(null);
+		}
+	}
+
+	public Object doSendMsgAuthType1(MsgSendReqDto msgSendReqDto, MsgFunctionInfo msgFunctionInfo) {
+		boolean isEmail = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.EMAILS);
+		boolean isMobile = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.MOBILE_NUM);
+		if (!isEmail && !isMobile) {
+			return ResultFactory.toNackPARAM();
+		}
+
+		if (StringUtils.isBlank(msgSendReqDto.getUserId()) || StringUtils.isEmpty(msgSendReqDto.getTokenId())) {
+			return ResultFactory.toNackPARAM();
+		}
+		if (!StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())) {
+			return ResultFactory.toNackPARAM();
+		}
+
+		MsgAuthInfo tokenMsgAuthInfo = null;
+		String msgUUID = msgSendReqDto.getUserId();
+		boolean isSameToUserInfoAddr = false;
+		// 若是手机或邮箱和用户的手机号邮箱不同，需要先获取对应功能的msgToken才能往不同的手机或邮箱发送验证码
+		LoginUserAccount queryUserAccount = new LoginUserAccount();
+		queryUserAccount.setLoginId(msgSendReqDto.getUserId());
+		queryUserAccount.setStatus(1);
+		LoginUserAccount resultUserAccout = loginUserAccountMapper.selectOne(queryUserAccount);
+		if (null == resultUserAccout) {
+			return ResultFactory.toNackCORE("用户不存在");
+		}
+		if (isEmail) {
+			isSameToUserInfoAddr = msgSendReqDto.getMsgAddr().equals(resultUserAccout.getLoginEmail());
+		}
+		if (isMobile) {
+			isSameToUserInfoAddr = msgSendReqDto.getMsgAddr().equals(resultUserAccout.getLoginMobile());
+		}
+		if (!isSameToUserInfoAddr && msgFunctionInfo.getNeedMsgToken() == 1) {
+
+			if (StringUtils.isEmpty(msgSendReqDto.getMsgToken())) {
+				return ResultFactory.toNackCORE("无权往其他账户上面发送验证码");
+			}
+			String nowDateStr = AppConfig.SDF_DB_VERSION.format(new Date());
+			MsgAuthInfo queryMsgAuthInfo = new MsgAuthInfo();
+			queryMsgAuthInfo.setUuid(msgUUID);
+			queryMsgAuthInfo.setMsgToken(msgSendReqDto.getMsgToken());
+			queryMsgAuthInfo.setFunctionToId(msgSendReqDto.getMsgFunction());
+			tokenMsgAuthInfo = msgAuthInfoMapper.selectOne(queryMsgAuthInfo);
+			if (null == tokenMsgAuthInfo || nowDateStr.compareTo(tokenMsgAuthInfo.getMsgValidTime()) >= 0) {
+				return ResultFactory.toNack(ResultFactory.ERR_MSGCODE_INVALID, "你还没有获取短信验证码");
+			}
+			else if (tokenMsgAuthInfo.getMsgStatus() != 1) {
+				return ResultFactory.toNack(ResultFactory.ERR_MSGCODE_INVALID, "短信验证码已经失效，请重新获取");
+			}
+			else {
+				tokenMsgAuthInfo.setMsgStatus(0);
+				int dbResult = msgAuthInfoMapper.updateByPrimaryKeySelective(tokenMsgAuthInfo);
+				if (dbResult <= 0) {
+					return ResultFactory.toNack(ResultFactory.ERR_MSGCODE_INVALID, "短信验证码已经失效，请重新获取");
+				}
+			}
+		}
+		// 写入记录表
+		String msgId = dbSeqService.getMsgInfoNewPk();
+		String functionId = msgFunctionInfo.getFunctionId();
+		int msgType = isMobile ? 1 : 2;
+		String msgCode = MsgFunctionConfig.generateVerifyCode();
+		String msgToken = TokenUtil.generateVerifyToken();
+		String msgContent = MsgFunctionConfig.generateVerifyContent(msgFunctionInfo, msgCode, isMobile, isEmail);
+		String msgAddr = msgSendReqDto.getMsgAddr();
+		Date nowDate = new Date();
+		String msgValidTime = TimeUtils.formatTime(nowDate.getTime() + AppConfig.VerfiyCodeValidTime,
+				AppConfig.SDF_DB_VERSION);
+		String createDate = AppConfig.SDF_DB_DATE.format(nowDate);
+		String createTime = AppConfig.SDF_DB_VERSION.format(nowDate);
+		MsgSendInfo msgSendInfo = new MsgSendInfo();
+		msgSendInfo.setMsgId(msgId);
+		msgSendInfo.setUserId(msgUUID);
+		msgSendInfo.setFunctionId(functionId);
+		msgSendInfo.setMsgType(msgType);
+		if (isSameToUserInfoAddr && msgFunctionInfo.getAuthType() == 2) {
+			msgSendInfo.setMsgToken(msgToken);
+		}
+		msgSendInfo.setMsgAddr(msgAddr);
+		msgSendInfo.setMsgCode(msgCode);
+		msgSendInfo.setMsgStatus(0);
+		msgSendInfo.setMsgContent(msgContent);
+		msgSendInfo.setMsgValidTime(msgValidTime);
+		msgSendInfo.setCreateDate(createDate);
+		msgSendInfo.setCreateTime(createTime);
+		int dbResult = msgSendInfoMapper.insertSelective(msgSendInfo);
+		if (dbResult <= 0) {
+			return ResultFactory.toNackDB();
+		}
+
+		MsgAuthInfo msgAuthInfo = new MsgAuthInfo();
+		msgAuthInfo.setUuid(msgUUID);
+		msgAuthInfo.setMsgAddr(msgAddr);
+		msgAuthInfo.setFunctionId(functionId);
+		msgAuthInfo.setSessionTokenId(msgSendReqDto.getTokenId());
+		msgAuthInfo.setMsgCode(msgCode);
+		msgAuthInfo.setMsgValidTime(msgValidTime);
+		msgAuthInfo.setMsgStatus(1);
+		// msgAuthInfo.setFunctionToId(null);
+		// msgAuthInfo.setMsgToken(null);
+		MsgAuthInfo resultMsgAuthInfo = msgAuthInfoMapper.selectByPrimaryKey(msgAuthInfo);
+		if (null == resultMsgAuthInfo) {
+			// 写入认证表
+			msgAuthInfo.setVersion(0);
+			dbResult = msgAuthInfoMapper.insertSelective(msgAuthInfo);
+		}
+		else {
+			msgAuthInfo.setVersion(resultMsgAuthInfo.getVersion());
+			dbResult = msgAuthInfoMapper.updateByPrimaryKey(msgAuthInfo);
+		}
+
+		if (dbResult <= 0) {
+			return ResultFactory.toNackDB();
+		}
+		else {
+			return ResultFactory.toAck(null);
+		}
+	}
+
+	public Object doSendMsgAuthType0(MsgSendReqDto msgSendReqDto, MsgFunctionInfo msgFunctionInfo) {
+		boolean isEmail = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.EMAILS);
+		boolean isMobile = RegexUtil.doRegex(msgSendReqDto.getMsgAddr(), RegexUtil.MOBILE_NUM);
+		if (!isEmail && !isMobile) {
+			return ResultFactory.toNackPARAM();
+		}
+		if (!StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo()) || !StringUtils.isEmpty(msgSendReqDto.getMsgToken())
+				|| !StringUtils.isEmpty(msgSendReqDto.getUserId())
+				|| !StringUtils.isEmpty(msgSendReqDto.getTokenId())) {
+			return ResultFactory.toNackPARAM();
+		}
+		String msgUUID = msgSendReqDto.getUuid();
+
+		// 写入记录表
+		String msgId = dbSeqService.getMsgInfoNewPk();
+		String userId = msgSendReqDto.getUserId();
+		String functionId = msgFunctionInfo.getFunctionId();
+		int msgType = isMobile ? 1 : 2;
+		String msgCode = MsgFunctionConfig.generateVerifyCode();
+		String msgContent = MsgFunctionConfig.generateVerifyContent(msgFunctionInfo, msgCode, isMobile, isEmail);
+		String msgAddr = msgSendReqDto.getMsgAddr();
+		Date nowDate = new Date();
+		String msgValidTime = TimeUtils.formatTime(nowDate.getTime() + AppConfig.VerfiyCodeValidTime,
+				AppConfig.SDF_DB_VERSION);
+		String createDate = AppConfig.SDF_DB_DATE.format(nowDate);
+		String createTime = AppConfig.SDF_DB_VERSION.format(nowDate);
+		MsgSendInfo msgSendInfo = new MsgSendInfo();
+		msgSendInfo.setMsgId(msgId);
+		msgSendInfo.setUserId(msgUUID);
+		msgSendInfo.setFunctionId(functionId);
+		msgSendInfo.setMsgType(msgType);
+		msgSendInfo.setMsgAddr(msgAddr);
+		msgSendInfo.setMsgCode(msgCode);
+		msgSendInfo.setMsgStatus(0);
+		msgSendInfo.setMsgContent(msgContent);
+		msgSendInfo.setMsgValidTime(msgValidTime);
+		msgSendInfo.setCreateDate(createDate);
+		msgSendInfo.setCreateTime(createTime);
+		int dbResult = msgSendInfoMapper.insertSelective(msgSendInfo);
+		if (dbResult <= 0) {
+			return ResultFactory.toNackDB();
+		}
+
+		MsgAuthInfo msgAuthInfo = new MsgAuthInfo();
+		msgAuthInfo.setUuid(msgUUID);
 		msgAuthInfo.setMsgAddr(msgAddr);
 		msgAuthInfo.setFunctionId(functionId);
 		msgAuthInfo.setSessionTokenId(msgSendReqDto.getTokenId());
@@ -172,9 +335,6 @@ public class MsgSendServiceImpl implements MsgSendService {
 		msgAuthInfo.setMsgStatus(1);
 		if (msgFunctionInfo.getAuthType() == 2) {
 			msgAuthInfo.setFunctionToId(msgSendReqDto.getMsgFunctionTo());
-		}
-		if (isSameToUserInfoAddr && msgFunctionInfo.getAuthType() == 2) {
-			msgAuthInfo.setMsgToken(msgToken);
 		}
 		MsgAuthInfo resultMsgAuthInfo = msgAuthInfoMapper.selectByPrimaryKey(msgAuthInfo);
 		if (null == resultMsgAuthInfo) {

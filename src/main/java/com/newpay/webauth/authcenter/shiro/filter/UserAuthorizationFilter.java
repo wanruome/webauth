@@ -21,8 +21,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.config.MsgFunctionConfig;
 import com.newpay.webauth.config.sign.SignTools;
+import com.newpay.webauth.dal.mapper.LoginUserAccountMapper;
 import com.newpay.webauth.dal.mapper.LoginUserTokenMapper;
 import com.newpay.webauth.dal.mapper.MsgAuthInfoMapper;
+import com.newpay.webauth.dal.model.LoginUserAccount;
 import com.newpay.webauth.dal.model.LoginUserToken;
 import com.newpay.webauth.dal.model.MsgAuthInfo;
 import com.newpay.webauth.dal.model.MsgFunctionInfo;
@@ -32,6 +34,8 @@ import com.ruomm.base.tools.StringUtils;
 public class UserAuthorizationFilter extends AuthorizationFilter {
 	@Autowired
 	LoginUserTokenMapper loginUserTokenMapper;
+	@Autowired
+	LoginUserAccountMapper loginUserAccountMapper;
 	@Autowired
 	MsgAuthInfoMapper msgAuthInfoMapper;
 
@@ -84,19 +88,44 @@ public class UserAuthorizationFilter extends AuthorizationFilter {
 					return false;
 				}
 				else {
-					msgAuthInfo.setMsgStatus(0);
-					msgAuthInfo.setVersion(resultAuthInfo.getVersion());
-					int dbResult = msgAuthInfoMapper.updateByPrimaryKeySelective(msgAuthInfo);
-					if (dbResult <= 0) {
-						throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码已经失效，请重新获取");
-						return false;
+					if (msgFunctionInfo.getAuthType() != 2) {
+						msgAuthInfo.setMsgStatus(0);
+						msgAuthInfo.setVersion(resultAuthInfo.getVersion());
+						int dbResult = msgAuthInfoMapper.updateByPrimaryKeySelective(msgAuthInfo);
+						if (dbResult <= 0) {
+							throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码已经失效，请重新获取");
+							return false;
+						}
 					}
 					if (!verifyCode.equals(resultAuthInfo.getMsgCode())) {
 						throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码不正确");
 						return false;
 					}
 				}
+				if (StringUtils.isEmpty(msgFunctionInfo.getVerfifyFieldName())) {
+					String userId = jsonObject.getString(AppConfig.REQUEST_FIELD_USER_ID);
+					LoginUserAccount queryAccount = new LoginUserAccount();
+					queryAccount.setLoginId(userId);
+					LoginUserAccount resultAccount = loginUserAccountMapper.selectByPrimaryKey(queryAccount);
+					if (null == resultAccount) {
+						throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码不匹配");
+						return false;
+					}
+					if (!resultAuthInfo.getMsgAddr().equals(resultAccount.getLoginMobile())
+							&& !resultAuthInfo.getMsgAddr().equals(resultAccount.getLoginEmail())) {
+						throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码不匹配");
+						return false;
+					}
+				}
+				else {
+					String msgAddr = jsonObject.getString(msgFunctionInfo.getVerfifyFieldName());
+					if (!resultAuthInfo.getMsgAddr().equals(msgAddr)) {
+						throwException(response, ResultFactory.ERR_MSGCODE_INVALID, "短信验证码不匹配");
+						return false;
+					}
+				}
 			}
+			// 进行签名验证流程
 			String signInfo = jsonObject.getString(AppConfig.REQUEST_FIELD_SIGN_INFO);
 			if (StringUtils.isEmpty(signInfo)) {
 				return true;

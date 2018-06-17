@@ -21,6 +21,8 @@ public class UserInfoRegisterReqDto {
 	private String pwdEncrypt;
 	@NotEmpty
 	private String uuid;
+	@NotEmpty
+	private String msgVerifyCode;
 	private String name;
 	private String mobie;
 	private String email;

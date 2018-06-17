@@ -67,7 +67,7 @@ public class UserAccoutController {
 
 	}
 
-	@ApiOperation("用户注册")
+	@ApiOperation("用户登录")
 	@PostMapping("/doLogin")
 	public Object doLogin(@Valid @RequestBody UserInfoLoginReqDto userInfoLoginReqDto, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
@@ -84,7 +84,7 @@ public class UserAccoutController {
 		return userAccountService.doLogin(userInfoLoginReqDto);
 	}
 
-	@ApiOperation("用户注册")
+	@ApiOperation("修改密码")
 	@PostMapping("/doModifyPwd")
 	public Object doModifyPwd(@Valid @RequestBody UserInfoModifyPwd userInfoModifyPwd, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
@@ -110,13 +110,13 @@ public class UserAccoutController {
 		return userAccountService.doModifyPwd(userInfoModifyPwd);
 	}
 
-	@ApiOperation("用户注册")
+	@ApiOperation("找回密码")
 	@PostMapping("/doFindPwd")
 	public Object doFindPwd(@RequestBody UserInfoRegisterReqDto userInfoRegister) {
 		return null;
 	}
 
-	@ApiOperation("用户注册")
+	@ApiOperation("修改手机号")
 	@PostMapping("/doModifyMobile")
 	public Object doModifyMobile(@Valid @RequestBody UserInfoModifyMobie userInfoModifyMobie,
 			BindingResult bindingResult) {
@@ -126,7 +126,7 @@ public class UserAccoutController {
 		return userAccountService.doModifyMobile(userInfoModifyMobie);
 	}
 
-	@ApiOperation("用户注册")
+	@ApiOperation("修改邮箱号码")
 	@PostMapping("/doModifyEmail")
 	public Object doModifyEmail(@Valid @RequestBody UserInfoModifyEmail userInfoModifyEmail,
 			BindingResult bindingResult) {
@@ -136,7 +136,7 @@ public class UserAccoutController {
 		return userAccountService.doModifyEmail(userInfoModifyEmail);
 	}
 
-	@ApiOperation("用户注册")
+	@ApiOperation("修改登录名")
 	@PostMapping("/doModifyName")
 	public Object doModifyName(@Valid @RequestBody UserInfoModifyName userInfoModifyName, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {

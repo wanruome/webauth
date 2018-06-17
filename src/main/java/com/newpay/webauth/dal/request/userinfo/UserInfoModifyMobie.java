@@ -20,7 +20,7 @@ public class UserInfoModifyMobie {
 	@Pattern(regexp = RegexUtil.MOBILE_NUM)
 	private String newMobile;
 	@NotEmpty
-	private String verifyCode;
+	private String msgVerifyCode;
 	@NotEmpty
 	private String authToken;
 }

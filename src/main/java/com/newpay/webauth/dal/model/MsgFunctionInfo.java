@@ -21,6 +21,10 @@ public class MsgFunctionInfo {
 	private String functionName;
 	@Column(name = "AUTH_TYPE")
 	private Integer authType;
+	@Column(name = "NEED_MSGTOKEN")
+	private Integer needMsgToken;
+	@Column(name = "VERIFY_FIELD_NAME")
+	private String verfifyFieldName;
 	@Column(name = "MAPPING")
 	private String mapping;
 	@Column(name = "TEMPLATE")
