@@ -31,20 +31,22 @@
 		</mvc:argument-resolvers>
 		<mvc:message-converters register-defaults="true">
 			<!-- 支持返回json(避免IE在ajax请求时，返回json出现下载 ) -->
+			<!-- com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter -->
+			<!-- org.springframework.http.converter.json.GsonHttpMessageConverter -->
 			<bean
-				class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+				class="org.springframework.http.converter.json.GsonHttpMessageConverter">
 				<property name="supportedMediaTypes">
 					<list>
 						<value>text/html;charset=UTF-8</value>
 						<value>application/json</value>
 					</list>
 				</property>
-				<property name="features">
+				<!-- <property name="features">
 					<list>
 						<value>WriteMapNullValue</value>
 						<value>QuoteFieldNames</value>
 					</list>
-				</property>
+				</property> -->
 			</bean>
 		</mvc:message-converters>
 	</mvc:annotation-driven>

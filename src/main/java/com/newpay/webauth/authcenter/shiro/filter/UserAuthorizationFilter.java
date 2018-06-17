@@ -28,6 +28,7 @@ import com.newpay.webauth.dal.model.LoginUserAccount;
 import com.newpay.webauth.dal.model.LoginUserToken;
 import com.newpay.webauth.dal.model.MsgAuthInfo;
 import com.newpay.webauth.dal.model.MsgFunctionInfo;
+import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.ruomm.base.tools.StringUtils;
 
@@ -58,6 +59,8 @@ public class UserAuthorizationFilter extends AuthorizationFilter {
 		else {
 			// 进行短信验证码验证流程
 			String verifyCode = jsonObject.getString(AppConfig.REQUEST_FIELD_VERIFY_CODE);
+			UserInfoModifyMobie userInfoModifyMobie = jsonObject.toJavaObject(UserInfoModifyMobie.class);
+			System.out.println(userInfoModifyMobie.toString());
 			if (!StringUtils.isEmpty(verifyCode)) {
 				MsgFunctionInfo msgFunctionInfo = MsgFunctionConfig.getMsgFuntionInfoByURI(request);
 				if (null == msgFunctionInfo) {
