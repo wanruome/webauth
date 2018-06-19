@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.dal.core.TokenResponseParse;
 
 public interface UserTokenInfoService {
-	public TokenResponseParse createTokenForLogin(String userId, String appId, String termType);
+	public TokenResponseParse createTokenForLogin(String userId, String appId, String termType, String uuid);
 
 	public JSONObject distoryTokenForLogout(String userId, String appId, String termType);
 

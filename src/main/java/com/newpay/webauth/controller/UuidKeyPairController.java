@@ -32,7 +32,7 @@ public class UuidKeyPairController {
 	@PostMapping("/getPublicKeyByUuid")
 	public Object getPublicKeyByUuid(@Valid @RequestBody UuidKeyPairReqDto uuidKeyPairReqDto,
 			BindingResult bindingResult) {
-		if (null == bindingResult) {
+		if (null == bindingResult || bindingResult.hasErrors()) {
 			return ResultFactory.toNackPARAM();
 		}
 		return uuidKeyPairService.getPublicKeyByUuid(uuidKeyPairReqDto);

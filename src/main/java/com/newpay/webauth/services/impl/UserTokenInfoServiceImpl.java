@@ -36,7 +36,8 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 	LoginUserTokenMapper loginUserTokenMapper;
 
 	@Override
-	public TokenResponseParse createTokenForLogin(String userId, String appId, String termType) {
+	public TokenResponseParse createTokenForLogin(String userId, String appId, String termType, String uuid) {
+		String realUUID = appId + "_" + userId + "_" + uuid;
 		TokenResponseParse tokenResponseParse = new TokenResponseParse();
 		tokenResponseParse.setValid(false);
 		LoginAppInfo queryLoginAppInfo = new LoginAppInfo();
@@ -80,7 +81,7 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 		}
 		Date nowTime = new Date();
 		String nowTimeStr = AppConfig.SDF_DB_VERSION.format(nowTime);
-		String validTimeString = TimeUtils.formatTime(nowTime.getTime() + TimeUtils.VALUE_DAYTimeMillis,
+		String validTimeString = TimeUtils.formatTime(nowTime.getTime() + AppConfig.UserToken_ValidTime,
 				AppConfig.SDF_DB_VERSION);
 		LoginUserToken outUserToken = new LoginUserToken();
 		outUserToken.setAppId(appId);
@@ -121,34 +122,75 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 				return tokenResponseParse;
 			}
 		}
-
-		LoginUserToken loginUserToken = new LoginUserToken();
-		loginUserToken.setTokenId(dbSeqService.getLoginTokenNewPk());
-		loginUserToken.setAppId(appId);
-		loginUserToken.setUserId(userId);
-		loginUserToken.setTermType(Integer.valueOf(termType));
-		loginUserToken.setToken(TokenUtil.generateToken());
-		loginUserToken.setLoginStatus(1);
-		loginUserToken.setValidTime(validTimeString);
-		loginUserToken.setCreateTime(nowTimeStr);
-		loginUserToken.setVersion(1);
-		int dbResult = loginUserTokenMapper.insert(loginUserToken);
-		if (dbResult > 0) {
-			List<LoginUserToken> userTokenListAll = new ArrayList<>();
-			for (int i = 0; i < loginTotalSize; i++) {
-				if (resultTotalTokenLst.get(i).getLoginStatus() == 1) {
-					userTokenListAll.add(resultTotalTokenLst.get(i));
+		// 查找有没有该UUID下面的设备，有的话直接登录
+		LoginUserToken queryUUIDToken = new LoginUserToken();
+		queryUUIDToken.setAppId(appId);
+		queryUUIDToken.setUserId(userId);
+		queryUUIDToken.setUuid(realUUID);
+		LoginUserToken resultUUIDToken = loginUserTokenMapper.selectOne(queryUUIDToken);
+		if (null == resultUUIDToken) {
+			LoginUserToken loginUserToken = new LoginUserToken();
+			loginUserToken.setTokenId(dbSeqService.getLoginTokenNewPk());
+			loginUserToken.setAppId(appId);
+			loginUserToken.setUserId(userId);
+			loginUserToken.setUuid(realUUID);
+			loginUserToken.setTermType(Integer.valueOf(termType));
+			loginUserToken.setToken(TokenUtil.generateToken());
+			loginUserToken.setLoginStatus(1);
+			loginUserToken.setValidTime(validTimeString);
+			loginUserToken.setCreateTime(nowTimeStr);
+			loginUserToken.setVersion(1);
+			int dbResult = loginUserTokenMapper.insert(loginUserToken);
+			if (dbResult > 0) {
+				List<LoginUserToken> userTokenListAll = new ArrayList<>();
+				for (int i = 0; i < loginTotalSize; i++) {
+					if (resultTotalTokenLst.get(i).getLoginStatus() == 1) {
+						userTokenListAll.add(resultTotalTokenLst.get(i));
+					}
 				}
+				userTokenListAll.add(loginUserToken);
+				tokenResponseParse.setLoginUserToken(loginUserToken);
+				tokenResponseParse.setTokenList(userTokenListAll);
+				tokenResponseParse.setValid(true);
+				return tokenResponseParse;
 			}
-			userTokenListAll.add(loginUserToken);
-			tokenResponseParse.setLoginUserToken(loginUserToken);
-			tokenResponseParse.setTokenList(userTokenListAll);
-			tokenResponseParse.setValid(true);
-			return tokenResponseParse;
+			else {
+				tokenResponseParse.setReturnResp(ResultFactory.toNackDB("无法登录"));
+				return tokenResponseParse;
+			}
 		}
 		else {
-			tokenResponseParse.setReturnResp(ResultFactory.toNackDB("无法登录"));
-			return tokenResponseParse;
+			LoginUserToken loginUserToken = new LoginUserToken();
+			loginUserToken.setTokenId(resultUUIDToken.getTokenId());
+			loginUserToken.setTermType(Integer.valueOf(termType));
+			loginUserToken.setToken(TokenUtil.generateToken());
+			loginUserToken.setLoginStatus(1);
+			loginUserToken.setValidTime(validTimeString);
+			loginUserToken.setVersion(resultUUIDToken.getVersion());
+			int dbResult = loginUserTokenMapper.updateByPrimaryKeySelective(loginUserToken);
+			loginUserToken.setAppId(appId);
+			loginUserToken.setUserId(userId);
+			loginUserToken.setUuid(realUUID);
+			loginUserToken.setCreateTime(resultUUIDToken.getCreateTime());
+			loginUserToken.setVersion(resultUUIDToken.getVersion() + 1);
+
+			if (dbResult > 0) {
+				List<LoginUserToken> userTokenListAll = new ArrayList<>();
+				for (int i = 0; i < loginTotalSize; i++) {
+					if (resultTotalTokenLst.get(i).getLoginStatus() == 1) {
+						userTokenListAll.add(resultTotalTokenLst.get(i));
+					}
+				}
+				userTokenListAll.add(loginUserToken);
+				tokenResponseParse.setLoginUserToken(loginUserToken);
+				tokenResponseParse.setTokenList(userTokenListAll);
+				tokenResponseParse.setValid(true);
+				return tokenResponseParse;
+			}
+			else {
+				tokenResponseParse.setReturnResp(ResultFactory.toNackDB("无法登录"));
+				return tokenResponseParse;
+			}
 		}
 	}
 

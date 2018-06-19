@@ -8,9 +8,9 @@ package com.newpay.webauth.dal.model;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Version;
 
 import lombok.Data;
+import tk.mybatis.mapper.annotation.Version;
 
 @Data
 @Table(name = "TBL_LOGIN_APP_INFO")

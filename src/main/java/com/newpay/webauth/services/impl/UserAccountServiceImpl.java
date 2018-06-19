@@ -95,7 +95,8 @@ public class UserAccountServiceImpl implements UserAccountService {
 		// SecurityUtils.getSubject().login(shiroToken);
 
 		TokenResponseParse tokenResponseParse = userTokenInfoService.createTokenForLogin(
-				resultLoginUserAccount.getLoginId(), userInfoLoginReqDto.getAppId(), userInfoLoginReqDto.getTermType());
+				resultLoginUserAccount.getLoginId(), userInfoLoginReqDto.getAppId(), userInfoLoginReqDto.getTermType(),
+				userInfoLoginReqDto.getUuid());
 		if (!tokenResponseParse.isValid()) {
 			return tokenResponseParse.getReturnResp();
 		}

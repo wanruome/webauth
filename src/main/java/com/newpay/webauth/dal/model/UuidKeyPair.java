@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.Data;
+import tk.mybatis.mapper.annotation.Version;
 
 @Data
 @Table(name = "TBL_UUID_KEYPAIR")
@@ -26,6 +27,7 @@ public class UuidKeyPair {
 	private String privateKey;
 	@Column(name = "KEY_VERSION")
 	private String keyVersion;
+	@Version
 	@Column(name = "VERSION")
 	private Integer version;
 }

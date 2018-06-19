@@ -8,9 +8,9 @@ package com.newpay.webauth.dal.model;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Version;
 
 import lombok.Data;
+import tk.mybatis.mapper.annotation.Version;
 
 @Data
 @Table(name = "TBL_LOGIN_USER_TOKEN")
@@ -22,6 +22,8 @@ public class LoginUserToken {
 	private String userId;
 	@Column(name = "APP_ID")
 	private String appId;
+	@Column(name = "UUID")
+	private String uuid;
 	@Column(name = "TERM_TYPE")
 	private Integer termType;
 	@Column(name = "TOKEN")
@@ -32,8 +34,7 @@ public class LoginUserToken {
 	private Integer loginStatus;
 	@Column(name = "CREATE_TIME")
 	private String createTime;
-
-	@Version
 	@Column(name = "VERSION")
+	@Version
 	private Integer version;
 }

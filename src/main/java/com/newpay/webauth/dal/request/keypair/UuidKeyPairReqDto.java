@@ -7,11 +7,14 @@ package com.newpay.webauth.dal.request.keypair;
 
 import javax.validation.constraints.NotEmpty;
 
+import org.hibernate.validator.constraints.Length;
+
 import lombok.Data;
 
 @Data
 public class UuidKeyPairReqDto {
 	@NotEmpty
+	@Length(min = 24, max = 40)
 	private String uuid;
 	@NotEmpty
 	private String keyType;

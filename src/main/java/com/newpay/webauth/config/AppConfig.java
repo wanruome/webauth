@@ -17,6 +17,8 @@ public class AppConfig {
 	public static Long KeyPairPublicKeyGetSkipTime = null;
 	public static String UserPwdEncryptMethod = null;
 	// public static String UserPwdEncryptDefault = null;
+	public static Long UserToken_ValidTime = null;
+	public static Long UserToken_DeleteTime = null;
 	public static Integer UserPwdMinLength = null;
 	public static Integer UserPwdMaxLength = null;
 	/**
@@ -44,6 +46,8 @@ public class AppConfig {
 		UserPwdMaxLength = null;
 		UserPwdMinLength = null;
 		UserPwdMinRule = null;
+		UserToken_ValidTime = null;
+		UserToken_DeleteTime = null;
 		VerfiyCodeLength = null;
 		VerfiyCodeValidTime = null;
 		MSGSEND_LIMITCOUNT_EMAIL = null;
@@ -65,6 +69,8 @@ public class AppConfig {
 			UserPwdMinLength = configProperty.getValInteger("user.pwd_min_length");
 			UserPwdMaxLength = configProperty.getValInteger("user.pwd_max_length", 24);
 			UserPwdMinRule = configProperty.getValInteger("user.pwd_min_rule");
+			UserToken_ValidTime = configProperty.getValLongTime("usertoken.validtime");
+			UserToken_DeleteTime = configProperty.getValLongTime("usertoken.deletetime");
 			VerfiyCodeLength = configProperty.getValInteger("msg.verify_code_length", 6);
 			if (VerfiyCodeLength < 4) {
 				VerfiyCodeLength = 4;

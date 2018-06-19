@@ -118,7 +118,7 @@ public class UuidKeyPairServiceImpl implements UuidKeyPairService {
 				updateBean.setPrivateKey(keyPair[1]);
 				updateBean.setKeyVersion(AppConfig.SDF_DB_VERSION.format(new Date()));
 				updateBean.setVersion(resultUuidKeyPair.getVersion());
-				int dbResult = uuidKeyPairMapper.updateByPrimaryKey(updateBean);
+				int dbResult = uuidKeyPairMapper.updateByPrimaryKeySelective(updateBean);
 				returnKeyPair = dbResult > 0 ? updateBean : null;
 			}
 		}
