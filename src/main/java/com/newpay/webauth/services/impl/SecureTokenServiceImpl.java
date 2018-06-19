@@ -1,10 +1,11 @@
 /**
  *	@copyright wanruome-2018
  * 	@author wanruome
- * 	@create 2018年6月15日 下午10:58:49
+ * 	@create 2018年6月19日 下午10:54:26
  */
 package com.newpay.webauth.services.impl;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,47 +13,40 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.core.TokenResponseParse;
-import com.newpay.webauth.dal.mapper.LoginAppInfoMapper;
 import com.newpay.webauth.dal.mapper.LoginUserTokenMapper;
 import com.newpay.webauth.dal.model.LoginAppInfo;
+import com.newpay.webauth.dal.model.LoginUserAccount;
 import com.newpay.webauth.dal.model.LoginUserToken;
+import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.DbSeqService;
-import com.newpay.webauth.services.UserTokenInfoService;
+import com.newpay.webauth.services.SecureTokenService;
 import com.ruomm.base.tools.ListUtils;
+import com.ruomm.base.tools.StringUtils;
 import com.ruomm.base.tools.TimeUtils;
 import com.ruomm.base.tools.TokenUtil;
 
 @Service
-public class UserTokenInfoServiceImpl implements UserTokenInfoService {
+public class SecureTokenServiceImpl implements SecureTokenService {
 	@Autowired
 	DbSeqService dbSeqService;
-	@Autowired
-	LoginAppInfoMapper loginAppInfoMapper;
 	@Autowired
 	LoginUserTokenMapper loginUserTokenMapper;
 
 	@Override
-	public TokenResponseParse createTokenForLogin(String userId, String appId, String termType, String uuid) {
+	public TokenResponseParse createTokenForLogin(UserInfoLoginReqDto userInfoLoginReqDto,
+			LoginUserAccount resultLoginUserAccount, LoginAppInfo resultLoginAppInfo) {
+		// TODO Auto-generated method stub
+		String appId = resultLoginAppInfo.getAppId();
+		String userId = resultLoginUserAccount.getLoginId();
+		String termType = userInfoLoginReqDto.getTermType();
+		String uuid = userInfoLoginReqDto.getUuid();
 		String realUUID = appId + "_" + userId + "_" + uuid;
 		TokenResponseParse tokenResponseParse = new TokenResponseParse();
 		tokenResponseParse.setValid(false);
-		LoginAppInfo queryLoginAppInfo = new LoginAppInfo();
-		queryLoginAppInfo.setAppId(appId);
-		queryLoginAppInfo.setStatus(1);
-		LoginAppInfo resultLoginAppInfo = loginAppInfoMapper.selectOne(queryLoginAppInfo);
-
-		if (null == resultLoginAppInfo) {
-			tokenResponseParse.setReturnResp(ResultFactory.toNackPARAM());
-			return tokenResponseParse;
-		}
-		if (resultLoginAppInfo.getStatus() != 1) {
-			tokenResponseParse.setReturnResp(ResultFactory.toNackCORE("该应用已被停用，无法登录"));
-			return tokenResponseParse;
-		}
+		tokenResponseParse.setNeedVerifyCode(false);
 		int termTypeLimit = 0;
 		if (termType.equals(AppConfig.TERM_TYPE_ANDROID)) {
 			if (resultLoginAppInfo.getTermAndroidLimit() <= 0) {
@@ -79,27 +73,39 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 			tokenResponseParse.setReturnResp(ResultFactory.toNackCORE("该设备无权登录"));
 			return tokenResponseParse;
 		}
-		// 查找有没有该UUID下面的设备，有的话直接登录
 		LoginUserToken queryUUIDToken = new LoginUserToken();
 		queryUUIDToken.setAppId(appId);
 		queryUUIDToken.setUserId(userId);
 		queryUUIDToken.setUuid(realUUID);
 		LoginUserToken resultUUIDToken = loginUserTokenMapper.selectOne(queryUUIDToken);
-		// if (null == resultLoginAppInfo) {
-		// tokenResponseParse.setNeedVerifyCode(true);
-		// }
-		// else {
-		// try {
-		// long timeLastValidTime =
-		// AppConfig.SDF_DB_VERSION.parse(resultUUIDToken.getValidTime()).getTime();
-		// long timeSkip = new Date().getTime() - timeLastValidTime;
-		// }
-		// catch (ParseException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// }
+		// 查找有没有该UUID下面的设备，有的话不需要验证码登录
+		if (StringUtils.isEmpty(userInfoLoginReqDto.getMsgVerifyCode())) {
+			// 查看设备授权状态
+
+			if (null == resultUUIDToken) {
+				tokenResponseParse.setNeedVerifyCode(true);
+				return tokenResponseParse;
+			}
+			else {
+				try {
+					long timeLastValidTime = AppConfig.SDF_DB_VERSION.parse(resultUUIDToken.getValidTime()).getTime();
+					long timeSkip = new Date().getTime() - timeLastValidTime;
+					if (timeSkip < 0 || timeSkip > AppConfig.UserToken_DeleteTime) {
+						tokenResponseParse.setNeedVerifyCode(true);
+						return tokenResponseParse;
+					}
+				}
+				catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					tokenResponseParse.setNeedVerifyCode(true);
+					return tokenResponseParse;
+				}
+
+			}
+			// 查看业务时间段
+		}
+
 		Date nowTime = new Date();
 		String nowTimeStr = AppConfig.SDF_DB_VERSION.format(nowTime);
 		String validTimeString = TimeUtils.formatTime(nowTime.getTime() + AppConfig.UserToken_ValidTime,
@@ -208,37 +214,6 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 				return tokenResponseParse;
 			}
 		}
-	}
-
-	@Override
-	public String getTokenById(String tokenId, String userId, String appId) {
-		LoginUserToken loginUserToken = new LoginUserToken();
-		loginUserToken.setTokenId(tokenId);
-		// loginUserToken.setAppId(appId);
-		// loginUserToken.setTokenId(tokenId);
-		LoginUserToken resultUserToken = loginUserTokenMapper.selectByPrimaryKey(loginUserToken);
-		if (null == resultUserToken || resultUserToken.getLoginStatus() != 1) {
-			return null;
-		}
-		else if (!resultUserToken.getUserId().equals(userId)) {
-			return null;
-		}
-		else if (!resultUserToken.getAppId().equals(appId)) {
-			return null;
-		}
-		String nowTimeStr = AppConfig.SDF_DB_VERSION.format(new Date());
-		if (nowTimeStr.compareTo(resultUserToken.getValidTime()) > 0) {
-			return null;
-		}
-		else {
-			return resultUserToken.getToken();
-		}
-	}
-
-	@Override
-	public JSONObject distoryTokenForLogout(String userId, String appId, String termType) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

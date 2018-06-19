@@ -15,6 +15,7 @@ import lombok.Data;
 @Data
 public class TokenResponseParse {
 	private boolean isValid;
+	private boolean isNeedVerifyCode;
 	private JSONObject returnResp;
 	private LoginUserToken loginUserToken;
 	private List<LoginUserToken> tokenList;
