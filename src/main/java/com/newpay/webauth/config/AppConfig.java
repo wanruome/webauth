@@ -87,6 +87,9 @@ public class AppConfig {
 
 	}
 
+	public static final Integer OKHTTP_CONNECT_TIMEOUT = 5;
+	public static final Integer OKHTTP_WRITE_TIMEOUT = 15;
+	public static final Integer OKHTTP_READ_TIMEOUT = 15;
 	public static final String REQUEST_FIELD_SIGN_INFO = "signInfo";
 	public static final String REQUEST_FIELD_APP_ID = "appId";
 	public static final String REQUEST_FIELD_UUID = "uuid";

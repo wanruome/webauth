@@ -5,6 +5,8 @@
  */
 package com.newpay.webauth.services.impl;
 
+import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.core.TokenResponseParse;
+import com.newpay.webauth.dal.mapper.LoginAppInfoMapper;
 import com.newpay.webauth.dal.mapper.LoginUserAccountMapper;
+import com.newpay.webauth.dal.model.LoginAppInfo;
 import com.newpay.webauth.dal.model.LoginUserAccount;
+import com.newpay.webauth.dal.model.LoginUserToken;
 import com.newpay.webauth.dal.request.userinfo.UserInfoFindPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
@@ -28,12 +34,20 @@ import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.UserAccountService;
 import com.newpay.webauth.services.UserTokenInfoService;
+import com.ruomm.base.http.HttpConfig;
+import com.ruomm.base.http.ResponseData;
+import com.ruomm.base.http.okhttp.DataOKHttp;
+import com.ruomm.base.tools.Base64;
+import com.ruomm.base.tools.EncryptUtils;
+import com.ruomm.base.tools.RSAUtils;
 import com.ruomm.base.tools.RegexUtil;
 import com.ruomm.base.tools.StringUtils;
 
 @Component
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
+	@Autowired
+	LoginAppInfoMapper loginAppInfoMapper;
 	@Autowired
 	UserTokenInfoService userTokenInfoService;
 	@Autowired
@@ -60,6 +74,13 @@ public class UserAccountServiceImpl implements UserAccountService {
 		else {
 			return ResultFactory.toNackPARAM();
 		}
+		LoginAppInfo queryLoginAppinfo = new LoginAppInfo();
+		queryLoginAppinfo.setAppId(userInfoLoginReqDto.getAppId());
+		LoginAppInfo resultLoginAppinfo = loginAppInfoMapper.selectByPrimaryKey(queryLoginAppinfo);
+		if (null == resultLoginAppinfo || resultLoginAppinfo.getStatus() != 1) {
+			return ResultFactory.toNackCORE("无法登陆，应用授权失败");
+		}
+
 		LoginUserAccount resultLoginUserAccount = loginUserAccountMapper.selectOne(queryUserAccount);
 		if (null == resultLoginUserAccount) {
 			return ResultFactory.toNackCORE("用户不存在");
@@ -78,7 +99,41 @@ public class UserAccountServiceImpl implements UserAccountService {
 		if (!tokenResponseParse.isValid()) {
 			return tokenResponseParse.getReturnResp();
 		}
+		// 发送数据到第三方服务器上
+		if (!StringUtils.isEmpty(resultLoginAppinfo.getNotifyUrl())
+				&& resultLoginAppinfo.getNotifyUrl().toLowerCase().startsWith("http")) {
+			List<JSONObject> lstTokenJsons = new ArrayList<JSONObject>();
+			List<LoginUserToken> lstToken = tokenResponseParse.getTokenList();
+			StringBuilder sb = new StringBuilder();
+			for (LoginUserToken tmp : lstToken) {
+				sb.append(tmp.getTokenId()).append(tmp.getToken());
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("userId", tmp.getUserId());
+				jsonObject.put("tokenId", tmp.getTokenId());
+				jsonObject.put("token", tmp.getToken());
+				jsonObject.put("termType", tmp.getTermType());
+				jsonObject.put("validTime", tmp.getValidTime());
+				lstTokenJsons.add(jsonObject);
+			}
+			String tokenSignMd5 = EncryptUtils.encodingMD5(sb.toString());
+			PublicKey tokenKey = RSAUtils.getPublicKey(Base64.decode(resultLoginAppinfo.getPublicKey()));
+			byte[] tokeSignData = RSAUtils.encryptData(tokenSignMd5.getBytes(), tokenKey);
+			if (null == tokeSignData) {
+				return ResultFactory.toNackCORE("应用授权登录失败，应用秘钥不正确");
+			}
+			String tokenSignRSAMD5 = Base64.encode(tokeSignData);
 
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("signInfo", tokenSignRSAMD5);
+			jsonObject.put("tokenList", lstTokenJsons);
+			jsonObject.put("token", tokenResponseParse.getTokenList());
+			JSONObject json = ResultFactory.toAck(jsonObject);
+			ResponseData responseData = new DataOKHttp().setUrl(resultLoginAppinfo.getNotifyUrl())
+					.setRequestBody(json.toJSONString()).setRequestBody("fads").doHttp(String.class);
+			if (null == responseData || responseData.getStatus() != HttpConfig.Code_Success) {
+				return ResultFactory.toNackCORE("应用授权登录失败，第三方服务器无响应");
+			}
+		}
 		Map<String, String> resultData = new HashMap<>();
 		resultData.put("tokenId", tokenResponseParse.getLoginUserToken().getTokenId());
 		resultData.put("token", tokenResponseParse.getLoginUserToken().getToken());
@@ -171,6 +226,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 
 	@Override
 	public Object doModifyPwd(UserInfoModifyPwd userInfoModifyPwd) {
+		LoginAppInfo queryLoginAppinfo = new LoginAppInfo();
+		queryLoginAppinfo.setAppId(userInfoModifyPwd.getAppId());
+		LoginAppInfo resultLoginAppinfo = loginAppInfoMapper.selectByPrimaryKey(queryLoginAppinfo);
+		if (null == resultLoginAppinfo || resultLoginAppinfo.getStatus() != 1) {
+			return ResultFactory.toNackCORE("无法修改密码，应用授权失败");
+		}
 		LoginUserAccount dbLoginUserAccount = queryLoginUserAccount(userInfoModifyPwd.getUserId());
 		if (null == dbLoginUserAccount) {
 			return ResultFactory.toNackCORE("用户不存在");
@@ -227,6 +288,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Override
 	public Object doModifyMobile(UserInfoModifyMobie userInfoModifyMobie) {
 		// TODO Auto-generated method stub
+		LoginAppInfo queryLoginAppinfo = new LoginAppInfo();
+		queryLoginAppinfo.setAppId(userInfoModifyMobie.getAppId());
+		LoginAppInfo resultLoginAppinfo = loginAppInfoMapper.selectByPrimaryKey(queryLoginAppinfo);
+		if (null == resultLoginAppinfo || resultLoginAppinfo.getStatus() != 1) {
+			return ResultFactory.toNackCORE("无法修改手机号，应用授权失败");
+		}
 		if (VERIFY_IN_DB) {
 			LoginUserAccount queryUserAccount = new LoginUserAccount();
 			queryUserAccount.setLoginMobile(userInfoModifyMobie.getNewMobile());
@@ -261,6 +328,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Override
 	public Object doModifyEmail(UserInfoModifyEmail userInfoModifyEmail) {
 		// TODO Auto-generated method stub
+		LoginAppInfo queryLoginAppinfo = new LoginAppInfo();
+		queryLoginAppinfo.setAppId(userInfoModifyEmail.getAppId());
+		LoginAppInfo resultLoginAppinfo = loginAppInfoMapper.selectByPrimaryKey(queryLoginAppinfo);
+		if (null == resultLoginAppinfo || resultLoginAppinfo.getStatus() != 1) {
+			return ResultFactory.toNackCORE("无法修改邮箱，应用授权失败");
+		}
 		if (VERIFY_IN_DB) {
 			LoginUserAccount queryUserAccount = new LoginUserAccount();
 			queryUserAccount.setLoginEmail(userInfoModifyEmail.getNewEmail());
@@ -296,6 +369,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Override
 	public Object doModifyName(UserInfoModifyName userInfoModifyName) {
 		// TODO Auto-generated method stub
+		LoginAppInfo queryLoginAppinfo = new LoginAppInfo();
+		queryLoginAppinfo.setAppId(userInfoModifyName.getAppId());
+		LoginAppInfo resultLoginAppinfo = loginAppInfoMapper.selectByPrimaryKey(queryLoginAppinfo);
+		if (null == resultLoginAppinfo || resultLoginAppinfo.getStatus() != 1) {
+			return ResultFactory.toNackCORE("无法修改用户名，应用授权失败");
+		}
 		if (VERIFY_IN_DB) {
 			LoginUserAccount queryUserAccount = new LoginUserAccount();
 			queryUserAccount.setLoginName(userInfoModifyName.getNewName());

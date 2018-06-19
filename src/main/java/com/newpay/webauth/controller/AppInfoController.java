@@ -30,6 +30,12 @@ public class AppInfoController {
 	AppInfoService appInfoService;
 
 	@ApiOperation("用户注册")
+	@PostMapping("/doTest")
+	public Object doAddAppInfo() {
+		return "成功";
+	}
+
+	@ApiOperation("用户注册")
 	@PostMapping("/doAddAppInfo")
 	public Object doAddAppInfo(@Valid @RequestBody AppInfoAddReqDto appInfoAddReqDto, BindingResult bindingResult) {
 		if (null == bindingResult || bindingResult.hasErrors()) {
