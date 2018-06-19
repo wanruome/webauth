@@ -98,4 +98,15 @@ public class DbSeqServiceImpl implements DbSeqService {
 		return dbResult > 0 ? updateDbSeq.getSeqValue() : -9999;
 	}
 
+	@Override
+	public String getLoginAppInfoNewPk() {
+		// TODO Auto-generated method stub
+		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
+			return getSeqByName("SEQ_LOGIN_APP_INFO_NEW_PK", 100000) + "";
+		}
+		else {
+			return dbSequenceMapper.getSeqNextval("SEQ_LOGIN_APP_INFO_NEW_PK") + "";
+		}
+	}
+
 }

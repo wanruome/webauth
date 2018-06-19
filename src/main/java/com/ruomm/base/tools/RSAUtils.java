@@ -812,4 +812,15 @@ public final class RSAUtils {
 		}
 	}
 
+	public static boolean isRealRsa1024(String str) {
+		if (null == str) {
+			return false;
+		}
+		else if (str.length() < 200 || str.length() > 240 || !str.startsWith("MIG") || !str.endsWith("QAB")) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
 }

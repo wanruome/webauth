@@ -48,6 +48,10 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 			tokenResponseParse.setReturnResp(ResultFactory.toNackPARAM());
 			return tokenResponseParse;
 		}
+		if (resultLoginAppInfo.getStatus() != 1) {
+			tokenResponseParse.setReturnResp(ResultFactory.toNackCORE("该应用已被停用，无法登录"));
+			return tokenResponseParse;
+		}
 		int termTypeLimit = 0;
 		if (termType.equals(AppConfig.TERM_TYPE_ANDROID)) {
 			if (resultLoginAppInfo.getTermAndroidLimit() <= 0) {
@@ -148,6 +152,7 @@ public class UserTokenInfoServiceImpl implements UserTokenInfoService {
 		}
 	}
 
+	@Override
 	public String getTokenById(String tokenId, String userId, String appId) {
 		LoginUserToken loginUserToken = new LoginUserToken();
 		loginUserToken.setTokenId(tokenId);

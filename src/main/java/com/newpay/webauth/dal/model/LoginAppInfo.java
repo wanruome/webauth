@@ -20,8 +20,8 @@ public class LoginAppInfo {
 	private String appId;
 	@Column(name = "APP_NAME")
 	private String appName;
-	@Column(name = "PUBIC_KEY")
-	private String publicKey;
+	@Column(name = "APP_PWD")
+	private String appPwd;
 	@Column(name = "TERM_LIMIT")
 	private Integer termLimit;
 	@Column(name = "TERM_ANDROID_LIMIT")
@@ -32,12 +32,16 @@ public class LoginAppInfo {
 	private Integer termWebLimit;
 	@Column(name = "NEW_KILL_OUT")
 	private Integer newKillOut;
+	@Column(name = "PUBLIC_KEY")
+	private String publicKey;
+	@Column(name = "NOTIFY_URL")
+	private String notifyUrl;
 	@Column(name = "STATUS")
 	private Integer status;
 	@Column(name = "CREATE_TIME")
 	private String createTime;
-	@Column(name = "VERSION")
 	@Version
+	@Column(name = "VERSION")
 	private Integer version;
 
 }

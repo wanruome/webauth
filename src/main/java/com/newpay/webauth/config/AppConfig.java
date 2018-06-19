@@ -19,34 +19,43 @@ public class AppConfig {
 	// public static String UserPwdEncryptDefault = null;
 	public static Integer UserPwdMinLength = null;
 	public static Integer UserPwdMaxLength = null;
-	public static Integer MSGSEND_LIMITCOUNT_EMAIL = null;
-	public static Integer MSGSEND_LIMITCOUNT_MOBILE = null;
-	public static Integer MSGSEND_LIMITCOUNT_UUID = null;
-	public static Integer MSGSEND_LIMITCOUNT_USER = null;
 	/**
 	 * * 数字、大写字母、小写字母、特殊符号 密码强度，0不限制，1不能为纯数字，2为至少2种组合，3为至少3种组合，4为4种组合 //
 	 */
 	public static Integer UserPwdMinRule = null;
 	public static Integer VerfiyCodeLength = null;
 	public static Long VerfiyCodeValidTime = null;
+	public static Integer MSGSEND_LIMITCOUNT_EMAIL = null;
+	public static Integer MSGSEND_LIMITCOUNT_MOBILE = null;
+	public static Integer MSGSEND_LIMITCOUNT_UUID = null;
+	public static Integer MSGSEND_LIMITCOUNT_USER = null;
+	public static Integer APPINFO_MODIFY_LIMIT_ONE = null;
+
 	static {
 		forceLoadProperty();
 	}
 
+	public static void resetPropertyData() {
+		CompanyName = null;
+		KeyPairPublicKeyValidTime = null;
+		KeyPairPublicKeyGetSkipTime = null;
+		UserPwdEncryptMethod = null;
+		// UserPwdEncryptDefault = null;
+		UserPwdMaxLength = null;
+		UserPwdMinLength = null;
+		UserPwdMinRule = null;
+		VerfiyCodeLength = null;
+		VerfiyCodeValidTime = null;
+		MSGSEND_LIMITCOUNT_EMAIL = null;
+		MSGSEND_LIMITCOUNT_MOBILE = null;
+		MSGSEND_LIMITCOUNT_USER = null;
+		MSGSEND_LIMITCOUNT_UUID = null;
+		APPINFO_MODIFY_LIMIT_ONE = null;
+	}
+
 	public synchronized static void forceLoadProperty() {
 		try {
-			KeyPairPublicKeyValidTime = null;
-			KeyPairPublicKeyGetSkipTime = null;
-			UserPwdEncryptMethod = null;
-			// UserPwdEncryptDefault = null;
-			UserPwdMinLength = null;
-			UserPwdMaxLength = null;
-			UserPwdMinRule = null;
-			VerfiyCodeLength = null;
-			MSGSEND_LIMITCOUNT_EMAIL = null;
-			MSGSEND_LIMITCOUNT_MOBILE = null;
-			MSGSEND_LIMITCOUNT_USER = null;
-			MSGSEND_LIMITCOUNT_UUID = null;
+			resetPropertyData();
 			configProperty.forceLoadProperty();
 			CompanyName = configProperty.getValString("CompanyName", "浙江盛炬支付");
 			KeyPairPublicKeyValidTime = configProperty.getValLongTime("keypair.publickey_valid_time");
@@ -57,11 +66,6 @@ public class AppConfig {
 			UserPwdMaxLength = configProperty.getValInteger("user.pwd_max_length", 24);
 			UserPwdMinRule = configProperty.getValInteger("user.pwd_min_rule");
 			VerfiyCodeLength = configProperty.getValInteger("msg.verify_code_length", 6);
-			MSGSEND_LIMITCOUNT_EMAIL = configProperty.getValInteger("msgsend.limitcount_email");
-			MSGSEND_LIMITCOUNT_MOBILE = configProperty.getValInteger("msgsend.limitcount_mobile");
-			MSGSEND_LIMITCOUNT_USER = configProperty.getValInteger("msgsend.limitcount_user");
-			MSGSEND_LIMITCOUNT_UUID = configProperty.getValInteger("msgsend.limitcount_uuid");
-
 			if (VerfiyCodeLength < 4) {
 				VerfiyCodeLength = 4;
 			}
@@ -69,9 +73,16 @@ public class AppConfig {
 				VerfiyCodeLength = 10;
 			}
 			VerfiyCodeValidTime = configProperty.getValLongTime("msg.verify_code_valid_time", 15 * 60 * 1000l);
+			MSGSEND_LIMITCOUNT_EMAIL = configProperty.getValInteger("msgsend.limitcount_email");
+			MSGSEND_LIMITCOUNT_MOBILE = configProperty.getValInteger("msgsend.limitcount_mobile");
+			MSGSEND_LIMITCOUNT_USER = configProperty.getValInteger("msgsend.limitcount_user");
+			MSGSEND_LIMITCOUNT_UUID = configProperty.getValInteger("msgsend.limitcount_uuid");
+			APPINFO_MODIFY_LIMIT_ONE = configProperty.getValInteger("appinfo.modify.limitone");
+
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			resetPropertyData();
 		}
 
 	}
