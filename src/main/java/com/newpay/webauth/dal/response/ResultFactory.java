@@ -7,15 +7,16 @@ package com.newpay.webauth.dal.response;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.newpay.webauth.aop.SystemLogThreadLocal;
 import com.ruomm.base.tools.StringUtils;
 
 public class ResultFactory {
-	private static String RESPONSE_COED_TAG = "code";
-	private static String RESPONSE_MSG_TAG = "msg";
-	private static String RESPONSE_DATA_TAG = "data";
-	private static String ERR_PRARM = "e401";
-	private static String ERR_CORE = "e402";
-	private static String ERR_DB = "e403";
+	public static String RESPONSE_COED_TAG = "code";
+	public static String RESPONSE_MSG_TAG = "msg";
+	public static String RESPONSE_DATA_TAG = "data";
+	public static String ERR_PRARM = "e401";
+	public static String ERR_CORE = "e402";
+	public static String ERR_DB = "e403";
 	public static String ERR_UNKNOWN = "e499";
 	public static String ERR_NEED_VERIFYCODE = "e409";
 	public static String ERR_PARSE_REQUEST = "e410";
@@ -132,6 +133,7 @@ public class ResultFactory {
 	// }
 
 	private static JSONObject createResponse(String code, String msg, Object data, boolean isOneRoot) {
+		System.out.println(SystemLogThreadLocal.get());
 		String realCode = StringUtils.isEmpty(code) ? ERR_UNKNOWN : code;
 		String realMsg = null;
 		if (StringUtils.isEmpty(msg)) {

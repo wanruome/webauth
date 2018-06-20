@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.config.MsgFunctionConfig;
+import com.newpay.webauth.config.SystemLogFunctionConfig;
 import com.newpay.webauth.config.sign.SignTools;
 import com.newpay.webauth.dal.mapper.LoginUserAccountMapper;
 import com.newpay.webauth.dal.mapper.LoginUserTokenMapper;
@@ -29,6 +30,7 @@ import com.newpay.webauth.dal.model.LoginUserAccount;
 import com.newpay.webauth.dal.model.LoginUserToken;
 import com.newpay.webauth.dal.model.MsgAuthInfo;
 import com.newpay.webauth.dal.model.MsgFunctionInfo;
+import com.newpay.webauth.dal.model.SystemLogFunction;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyMobie;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.ruomm.base.tools.FastJsonTools;
@@ -65,6 +67,10 @@ public class UserAuthorizationFilter extends AuthorizationFilter {
 			return false;
 
 		}
+		// 日志节点加入
+
+		SystemLogFunction systemLogFunction = SystemLogFunctionConfig.getSystemLogFuntionInfoByURI(request);
+		System.out.println(systemLogFunction);
 		// 进行短信验证码验证流程
 		String verifyCode = FastJsonTools.getStringByKey(jsonObject, jsonKeyMap, AppConfig.REQUEST_FIELD_VERIFY_CODE);
 		UserInfoModifyMobie userInfoModifyMobie = jsonObject.toJavaObject(UserInfoModifyMobie.class);

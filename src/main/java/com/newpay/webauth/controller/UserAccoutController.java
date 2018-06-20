@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.newpay.webauth.aop.SystemLogThreadLocal;
 import com.newpay.webauth.config.PropertyUtil;
 import com.newpay.webauth.dal.core.PwdRequestParse;
+import com.newpay.webauth.dal.core.SysLogBean;
 import com.newpay.webauth.dal.request.userinfo.UserInfoFindPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoLoginReqDto;
 import com.newpay.webauth.dal.request.userinfo.UserInfoModifyEmail;
@@ -64,6 +66,11 @@ public class UserAccoutController {
 	@ApiOperation("用户登录")
 	@PostMapping("/doLogin")
 	public Object doLogin(@Valid @RequestBody UserInfoLoginReqDto userInfoLoginReqDto, BindingResult bindingResult) {
+		SysLogBean sysLogBean = new SysLogBean();
+		sysLogBean.setAppId(userInfoLoginReqDto.getAppId());
+		sysLogBean.setUserId(userInfoLoginReqDto.getAppId());
+		sysLogBean.setUuid(userInfoLoginReqDto.getUuid());
+		SystemLogThreadLocal.setSysLogBean(sysLogBean);
 		if (null == bindingResult || bindingResult.hasErrors()) {
 			return ResultFactory.toNackPARAM();
 		}

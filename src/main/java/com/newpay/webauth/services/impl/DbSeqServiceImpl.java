@@ -23,6 +23,40 @@ public class DbSeqServiceImpl implements DbSeqService {
 	@Value("${MyBatis.DBTYPE}")
 	private String dbType;
 
+	public long getSeqByNameOrcale(String name) {
+		return dbSequenceMapper.getSeqNextval(name);
+	}
+
+	public int getSeqByName(String name, int insertValue) {
+		// TODO Auto-generated method stub
+		String seqName = StringUtils.isEmpty(name) ? "default_seq_key" : name;
+		DbSequence querySeq = new DbSequence();
+		querySeq.setSeqName(seqName);
+		DbSequence resultDbSeq = dbSequenceMapper.selectByPrimaryKey(querySeq);
+		int dbResult = 0;
+		DbSequence updateDbSeq = new DbSequence();
+		if (null == resultDbSeq) {
+			updateDbSeq.setSeqName(seqName);
+			if (insertValue > 0) {
+				updateDbSeq.setSeqValue(insertValue);
+			}
+			else {
+				updateDbSeq.setSeqValue(1);
+			}
+			dbResult = dbSequenceMapper.insertSelective(updateDbSeq);
+		}
+		else {
+
+			updateDbSeq.setSeqName(resultDbSeq.getSeqName());
+			updateDbSeq.setSeqValue(resultDbSeq.getSeqValue() + 1);
+			Example example = new Example(DbSequence.class);
+			Example.Criteria criteria = example.createCriteria();
+			criteria.andEqualTo(resultDbSeq);
+			dbResult = dbSequenceMapper.updateByExampleSelective(updateDbSeq, example);
+		}
+		return dbResult > 0 ? updateDbSeq.getSeqValue() : -9999;
+	}
+
 	@Override
 	public String getLoginUserNewPK() {
 
@@ -64,40 +98,6 @@ public class DbSeqServiceImpl implements DbSeqService {
 	// return resultValue > 0 ? (long) resultValue : -9999l;
 	// }
 
-	public long getSeqByNameOrcale(String name) {
-		return dbSequenceMapper.getSeqNextval(name);
-	}
-
-	public int getSeqByName(String name, int insertValue) {
-		// TODO Auto-generated method stub
-		String seqName = StringUtils.isEmpty(name) ? "default_seq_key" : name;
-		DbSequence querySeq = new DbSequence();
-		querySeq.setSeqName(seqName);
-		DbSequence resultDbSeq = dbSequenceMapper.selectByPrimaryKey(querySeq);
-		int dbResult = 0;
-		DbSequence updateDbSeq = new DbSequence();
-		if (null == resultDbSeq) {
-			updateDbSeq.setSeqName(seqName);
-			if (insertValue > 0) {
-				updateDbSeq.setSeqValue(insertValue);
-			}
-			else {
-				updateDbSeq.setSeqValue(1);
-			}
-			dbResult = dbSequenceMapper.insertSelective(updateDbSeq);
-		}
-		else {
-
-			updateDbSeq.setSeqName(resultDbSeq.getSeqName());
-			updateDbSeq.setSeqValue(resultDbSeq.getSeqValue() + 1);
-			Example example = new Example(DbSequence.class);
-			Example.Criteria criteria = example.createCriteria();
-			criteria.andEqualTo(resultDbSeq);
-			dbResult = dbSequenceMapper.updateByExampleSelective(updateDbSeq, example);
-		}
-		return dbResult > 0 ? updateDbSeq.getSeqValue() : -9999;
-	}
-
 	@Override
 	public String getLoginAppInfoNewPk() {
 		// TODO Auto-generated method stub
@@ -106,6 +106,17 @@ public class DbSeqServiceImpl implements DbSeqService {
 		}
 		else {
 			return dbSequenceMapper.getSeqNextval("SEQ_LOGIN_APP_INFO_NEW_PK") + "";
+		}
+	}
+
+	@Override
+	public String getSystemLogNewPk() {
+		// TODO Auto-generated method stub
+		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
+			return getSeqByName("SYSTEM_LOG_NEW_PK", 100000) + "";
+		}
+		else {
+			return dbSequenceMapper.getSeqNextval("SYSTEM_LOG_NEW_PK") + "";
 		}
 	}
 
