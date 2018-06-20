@@ -14,8 +14,6 @@ import com.newpay.webauth.dal.model.DbSequence;
 import com.newpay.webauth.services.DbSeqService;
 import com.ruomm.base.tools.StringUtils;
 
-import tk.mybatis.mapper.entity.Example;
-
 @Service
 public class DbSeqServiceImpl implements DbSeqService {
 	@Autowired
@@ -23,11 +21,33 @@ public class DbSeqServiceImpl implements DbSeqService {
 	@Value("${MyBatis.DBTYPE}")
 	private String dbType;
 
-	public long getSeqByNameOrcale(String name) {
-		return dbSequenceMapper.getSeqNextval(name);
+	private String getSeqByName(String seqName, String headerName, int insertValue) {
+		if (StringUtils.isEmpty(seqName)) {
+			return null;
+		}
+		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
+			System.out.println("数据库类型1：" + dbType);
+			int value = getSeqForMySQL(seqName, insertValue);
+			if (value > 0) {
+				return StringUtils.nullStrToEmpty(headerName) + value + "";
+			}
+			else {
+				return null;
+			}
+		}
+		else {
+			System.out.println("数据库类型2：" + dbType);
+			long value = dbSequenceMapper.getSeqNextval(seqName);
+			if (value > 0) {
+				return StringUtils.nullStrToEmpty(headerName) + value + "";
+			}
+			else {
+				return null;
+			}
+		}
 	}
 
-	public int getSeqByName(String name, int insertValue) {
+	private int getSeqForMySQL(String name, int insertValue) {
 		// TODO Auto-generated method stub
 		String seqName = StringUtils.isEmpty(name) ? "default_seq_key" : name;
 		DbSequence querySeq = new DbSequence();
@@ -43,81 +63,45 @@ public class DbSeqServiceImpl implements DbSeqService {
 			else {
 				updateDbSeq.setSeqValue(1);
 			}
+			updateDbSeq.setVersion(1);
 			dbResult = dbSequenceMapper.insertSelective(updateDbSeq);
 		}
 		else {
 
 			updateDbSeq.setSeqName(resultDbSeq.getSeqName());
 			updateDbSeq.setSeqValue(resultDbSeq.getSeqValue() + 1);
-			Example example = new Example(DbSequence.class);
-			Example.Criteria criteria = example.createCriteria();
-			criteria.andEqualTo(resultDbSeq);
-			dbResult = dbSequenceMapper.updateByExampleSelective(updateDbSeq, example);
+			updateDbSeq.setVersion(resultDbSeq.getVersion());
+			dbResult = dbSequenceMapper.updateByPrimaryKeySelective(updateDbSeq);
 		}
 		return dbResult > 0 ? updateDbSeq.getSeqValue() : -9999;
 	}
 
 	@Override
 	public String getLoginUserNewPK() {
-
-		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
-			System.out.println("数据库类型1：" + dbType);
-			return getSeqByName("SEQ_LOGIN_USER_NEW_PK", 100000) + "";
-		}
-		else {
-			System.out.println("数据库类型2：" + dbType);
-			return dbSequenceMapper.getLoginUserNewPK() + "";
-		}
+		return getSeqByName("SEQ_LOGIN_USER_NEW_PK", null, 100000);
 	}
 
 	@Override
 	public String getMsgInfoNewPk() {
-		// TODO Auto-generated method stub
-		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
-			return getSeqByName("SEQ_LOGIN_USER_NEW_PK", 100000) + "";
-		}
-		else {
-			return dbSequenceMapper.getSeqNextval("SEQ_LOGIN_USER_NEW_PK") + "";
-		}
+		return getSeqByName("SEQ_MSG_INFO_NEW_PK", null, 100000);
 	}
 
 	@Override
 	public String getLoginTokenNewPk() {
 		// TODO Auto-generated method stub
-		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
-			return getSeqByName("SEQ_LOGIN_TOKEN_NEW_PK", 100000) + "";
-		}
-		else {
-			return dbSequenceMapper.getSeqNextval("SEQ_LOGIN_TOKEN_NEW_PK") + "";
-		}
+		return getSeqByName("SEQ_LOGIN_TOKEN_NEW_PK", null, 100000);
 	}
-
-	// public Long getSeqByNameLong(String name, int insertValue) {
-	// // TODO Auto-generated method stub
-	// int resultValue = getSeqByName(name, insertValue);
-	// return resultValue > 0 ? (long) resultValue : -9999l;
-	// }
 
 	@Override
 	public String getLoginAppInfoNewPk() {
 		// TODO Auto-generated method stub
-		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
-			return getSeqByName("SEQ_LOGIN_APP_INFO_NEW_PK", 100000) + "";
-		}
-		else {
-			return dbSequenceMapper.getSeqNextval("SEQ_LOGIN_APP_INFO_NEW_PK") + "";
-		}
+		return getSeqByName("SEQ_LOGIN_APP_INFO_NEW_PK", null, 100000);
 	}
 
 	@Override
 	public String getSystemLogNewPk() {
 		// TODO Auto-generated method stub
-		if (null == dbType || !dbType.toLowerCase().equals("oracle")) {
-			return getSeqByName("SYSTEM_LOG_NEW_PK", 100000) + "";
-		}
-		else {
-			return dbSequenceMapper.getSeqNextval("SYSTEM_LOG_NEW_PK") + "";
-		}
+		return getSeqByName("SYSTEM_LOG_NEW_PK", null, 100000);
 	}
 
 }

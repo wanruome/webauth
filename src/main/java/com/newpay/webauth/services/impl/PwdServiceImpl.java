@@ -249,7 +249,7 @@ public class PwdServiceImpl implements PwdService {
 			String pwd = getPwdByRsaOr3Des(pwdRequest, pwdEncrypt, pwdUuid);
 			if (StringUtils.isBlank(pwd)) {
 				pwdParse.setValid(false);
-				pwdParse.setReturnResp(ResultFactory.toNackPARAM(AppConfig.PWD_ERROR_PARSE));
+				pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PWD_PARSE, null));
 				return pwdParse;
 			}
 			else if (pwd.length() != 32) {
@@ -269,7 +269,7 @@ public class PwdServiceImpl implements PwdService {
 			String pwd = getPwdByRsaOr3Des(pwdRequest, pwdEncrypt, pwdUuid);
 			if (StringUtils.isBlank(pwd)) {
 				pwdParse.setValid(false);
-				pwdParse.setReturnResp(ResultFactory.toNackPARAM(AppConfig.PWD_ERROR_PARSE));
+				pwdParse.setReturnResp(ResultFactory.toNack(ResultFactory.ERR_PWD_PARSE, null));
 				return pwdParse;
 			}
 			else {
@@ -293,7 +293,7 @@ public class PwdServiceImpl implements PwdService {
 		}
 		else {
 			pwdParse.setValid(false);
-			pwdParse.setReturnResp(ResultFactory.toNackPARAM(AppConfig.PWD_ERROR_PARSE));
+			pwdParse.setReturnResp(ResultFactory.toNackPARAM());
 			return pwdParse;
 		}
 	}

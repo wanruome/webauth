@@ -19,10 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.newpay.webauth.aop.SystemLogThreadLocal;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.config.MsgFunctionConfig;
 import com.newpay.webauth.config.SystemLogFunctionConfig;
 import com.newpay.webauth.config.sign.SignTools;
+import com.newpay.webauth.dal.core.SysLogBean;
 import com.newpay.webauth.dal.mapper.LoginUserAccountMapper;
 import com.newpay.webauth.dal.mapper.LoginUserTokenMapper;
 import com.newpay.webauth.dal.mapper.MsgAuthInfoMapper;
@@ -36,6 +38,9 @@ import com.newpay.webauth.dal.response.ResultFactory;
 import com.ruomm.base.tools.FastJsonTools;
 import com.ruomm.base.tools.StringUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class UserAuthorizationFilter extends AuthorizationFilter {
 	@Autowired
 	LoginUserTokenMapper loginUserTokenMapper;
@@ -70,7 +75,31 @@ public class UserAuthorizationFilter extends AuthorizationFilter {
 		// 日志节点加入
 
 		SystemLogFunction systemLogFunction = SystemLogFunctionConfig.getSystemLogFuntionInfoByURI(request);
-		System.out.println(systemLogFunction);
+		if (null != systemLogFunction) {
+			log.debug(systemLogFunction.toString());
+			String userId = FastJsonTools.getStringByKey(jsonObject, jsonKeyMap, AppConfig.REQUEST_FIELD_USER_ID);
+			String logKeyValue = FastJsonTools.getStringByKey(jsonObject, jsonKeyMap,
+					systemLogFunction.getLogKeyFieldName());
+			String appId = FastJsonTools.getStringByKey(jsonObject, jsonKeyMap, AppConfig.REQUEST_FIELD_APP_ID);
+			String uuid = FastJsonTools.getStringByKey(jsonObject, jsonKeyMap, AppConfig.REQUEST_FIELD_UUID);
+			SysLogBean sysLogBean = new SysLogBean();
+			sysLogBean.setAppId(appId);
+			sysLogBean.setUserId(userId);
+			sysLogBean.setUuid(uuid);
+			sysLogBean.setLogKeyValue(logKeyValue);
+			sysLogBean.setFunctionId(systemLogFunction.getFunctionId());
+			sysLogBean.setFunctionName(systemLogFunction.getFunctionName());
+			sysLogBean.setMapping(systemLogFunction.getMapping());
+			sysLogBean.setStartTime(new Date().getTime());
+			if (null != systemLogFunction.getRequstLog() && systemLogFunction.getRequstLog() == 1) {
+				String jsonStr = jsonObject.toJSONString();
+				int length = StringUtils.getLength(jsonStr);
+				if (length < 1000) {
+					sysLogBean.setRequestInfo(jsonStr);
+				}
+			}
+			SystemLogThreadLocal.setSysLogBean(sysLogBean);
+		}
 		// 进行短信验证码验证流程
 		String verifyCode = FastJsonTools.getStringByKey(jsonObject, jsonKeyMap, AppConfig.REQUEST_FIELD_VERIFY_CODE);
 		UserInfoModifyMobie userInfoModifyMobie = jsonObject.toJavaObject(UserInfoModifyMobie.class);

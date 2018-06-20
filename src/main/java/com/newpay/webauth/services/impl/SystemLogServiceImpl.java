@@ -10,49 +10,87 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.config.AppConfig;
+import com.newpay.webauth.dal.core.SysLogBean;
 import com.newpay.webauth.dal.mapper.SystemLogMapper;
+import com.newpay.webauth.dal.mapper.SystemLogMatterMapper;
 import com.newpay.webauth.dal.model.SystemLog;
+import com.newpay.webauth.dal.model.SystemLogMatter;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.DbSeqService;
 import com.newpay.webauth.services.SystemLogService;
+import com.ruomm.base.tools.StringUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class SystemLogServiceImpl implements SystemLogService {
 	@Autowired
 	DbSeqService dbSeqService;
 	@Autowired
 	SystemLogMapper systemLogMapper;
+	@Autowired
+	SystemLogMatterMapper systemLogPwdErrMapper;
 
 	@Override
-	public boolean writeLogs(String functionId, String functionName, String userId, String uuid, String appId,
-			JSONObject jsonObject) {
-		// TODO Auto-generated method stub
-		String code = null;
-		String msg = null;
+	public void writeLogs(SysLogBean sysLogBean, String code, String msg) {
 		try {
-			code = jsonObject.getString(ResultFactory.RESPONSE_COED_TAG);
-			msg = jsonObject.getString(ResultFactory.RESPONSE_MSG_TAG);
+			String resultCode = StringUtils.isEmpty(code) ? ResultFactory.ERR_UNKNOWN : code;
+			String resultMsg = StringUtils.isEmpty(msg) ? "系统异常" : msg;
+			SystemLog systemLog = new SystemLog();
+			systemLog.setLogId(dbSeqService.getSystemLogNewPk());
+			systemLog.setUserId(sysLogBean.getUserId());
+			systemLog.setLogKeyValue(sysLogBean.getLogKeyValue());
+			systemLog.setUuid(sysLogBean.getUuid());
+			systemLog.setAppId(sysLogBean.getAppId());
+			systemLog.setFunctionId(sysLogBean.getFunctionId());
+			systemLog.setFunctionName(sysLogBean.getFunctionName());
+			systemLog.setMapping(sysLogBean.getMapping());
+			systemLog.setRequestInfo(sysLogBean.getRequestInfo());
+			systemLog.setResultCode(resultCode);
+			systemLog.setResultMsg(resultMsg);
+
+			Date date = new Date();
+			systemLog.setCreateDate(AppConfig.SDF_DB_DATE.format(date));
+			systemLog.setCreateTime(AppConfig.SDF_DB_VERSION.format(date));
+			String excuteTime = null;
+			try {
+				long timeExe = date.getTime() - sysLogBean.getStartTime();
+				excuteTime = timeExe + "";
+			}
+			catch (Exception e) {
+				log.error(e.getMessage());
+				excuteTime = null;
+			}
+			systemLog.setExcuteTime(excuteTime);
+			systemLogMapper.insert(systemLog);
+			// 插入重要的检索信息表，提高关键日志检索效率
+			if (ResultFactory.ERR_PWD_WRONG.equals(code)
+					|| "app/userAccount/doRegister".equals(sysLogBean.getMapping())) {
+				SystemLogMatter systemLogMatter = new SystemLogMatter();
+				systemLogMatter.setLogId(systemLog.getLogId());
+				systemLogMatter.setUserId(systemLog.getUserId());
+				systemLogMatter.setLogKeyValue(systemLog.getLogKeyValue());
+				systemLogMatter.setUuid(systemLog.getUuid());
+				systemLogMatter.setAppId(systemLog.getAppId());
+				systemLogMatter.setFunctionId(systemLog.getFunctionId());
+				systemLogMatter.setFunctionName(systemLog.getFunctionName());
+				systemLogMatter.setMapping(systemLog.getMapping());
+				systemLogMatter.setResultCode(resultCode);
+				systemLogMatter.setResultMsg(resultMsg);
+				systemLogMatter.setCreateDate(systemLog.getCreateDate());
+				systemLogMatter.setCreateTime(systemLog.getCreateTime());
+				systemLogMatter.setExcuteTime(excuteTime);
+				systemLogPwdErrMapper.insert(systemLogMatter);
+			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
-			code = ResultFactory.ERR_UNKNOWN;
-			msg = "系统异常";
+			// TODO: handle exception
+			log.error(e.getMessage());
 		}
-		SystemLog systemLog = new SystemLog();
-		systemLog.setLogId(dbSeqService.getSystemLogNewPk());
-		systemLog.setLogId(userId);
-		systemLog.setUuid(uuid);
-		systemLog.setAppId(appId);
-		systemLog.setFunctionId(functionId);
-		systemLog.setFunctionName(functionName);
-		systemLog.setResultCode(code);
-		systemLog.setResultMsg(msg);
-		Date date = new Date();
-		systemLog.setCreateDate(AppConfig.SDF_DB_DATE.format(date));
-		systemLog.setCreateTime(AppConfig.SDF_DB_VERSION.format(date));
-		return false;
+		// TODO Auto-generated method stub
+
 	}
 
 }

@@ -12,8 +12,8 @@ import javax.persistence.Table;
 import lombok.Data;
 
 @Data
-@Table(name = "TBL_SYSTEM_LOG")
-public class SystemLog {
+@Table(name = "TBL_SYSTEM_LOG_MATTER")
+public class SystemLogMatter {
 	@Id
 	@Column(name = "LOG_ID")
 	private String logId;

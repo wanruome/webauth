@@ -249,7 +249,6 @@ public class MsgSendServiceImpl implements MsgSendService {
 		if (!StringUtils.isEmpty(msgSendReqDto.getMsgFunctionTo())) {
 			return ResultFactory.toNackPARAM();
 		}
-
 		MsgAuthInfo tokenMsgAuthInfo = null;
 		String msgUUID = msgSendReqDto.getUserId();
 		boolean isSameToUserInfoAddr = false;

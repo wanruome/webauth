@@ -14,4 +14,8 @@ public class SysLogBean {
 	private String uuid;
 	private String functionId;
 	private String functionName;
+	private String logKeyValue;
+	private String requestInfo;
+	private String mapping;
+	private long startTime;
 }

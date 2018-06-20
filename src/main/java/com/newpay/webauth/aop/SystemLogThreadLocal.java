@@ -22,7 +22,25 @@ public class SystemLogThreadLocal {
 		dataSourceKey.set(null);
 	}
 
-	public static void cleanDataSource() {
+	public static void cleanSysLogBean() {
 		dataSourceKey.remove();
+	}
+
+	public static void setUserId(String userId) {
+		SysLogBean sysLogBean = null;
+		try {
+			sysLogBean = get();
+			if (null != sysLogBean) {
+				sysLogBean.setUserId(userId);
+			}
+			else {
+				cleanSysLogBean();
+			}
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+
 	}
 }

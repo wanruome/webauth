@@ -12,7 +12,6 @@ import com.newpay.webauth.dal.model.DbSequence;
 import tk.mybatis.mapper.common.Mapper;
 
 public interface DbSequenceMapper extends Mapper<DbSequence> {
-	public Long getLoginUserNewPK();
 
 	public Long getSeqNextval(@Param("seqName") String seqName);
 

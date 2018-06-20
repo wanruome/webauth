@@ -17,14 +17,17 @@ public class AppConfig {
 	public static Long KeyPairPublicKeyGetSkipTime = null;
 	public static String UserPwdEncryptMethod = null;
 	// public static String UserPwdEncryptDefault = null;
-	public static Long UserToken_ValidTime = null;
-	public static Long UserToken_DeleteTime = null;
+
 	public static Integer UserPwdMinLength = null;
 	public static Integer UserPwdMaxLength = null;
 	/**
 	 * * 数字、大写字母、小写字母、特殊符号 密码强度，0不限制，1不能为纯数字，2为至少2种组合，3为至少3种组合，4为4种组合 //
 	 */
 	public static Integer UserPwdMinRule = null;
+	public static Integer UserPwdErrLimit = null;
+	public static Long UserUuidAuthTime = null;
+	public static Long UserToken_ValidTime = null;
+	public static Long UserToken_DeleteTime = null;
 	public static Integer VerfiyCodeLength = null;
 	public static Long VerfiyCodeValidTime = null;
 	public static Integer MSGSEND_LIMITCOUNT_EMAIL = null;
@@ -32,6 +35,7 @@ public class AppConfig {
 	public static Integer MSGSEND_LIMITCOUNT_UUID = null;
 	public static Integer MSGSEND_LIMITCOUNT_USER = null;
 	public static Integer APPINFO_MODIFY_LIMIT_ONE = null;
+	public static Boolean SYSTEMLOG_ASYNC = null;
 
 	static {
 		forceLoadProperty();
@@ -43,18 +47,21 @@ public class AppConfig {
 		KeyPairPublicKeyGetSkipTime = null;
 		UserPwdEncryptMethod = null;
 		// UserPwdEncryptDefault = null;
-		UserPwdMaxLength = null;
 		UserPwdMinLength = null;
+		UserPwdMaxLength = null;
 		UserPwdMinRule = null;
+		UserPwdErrLimit = null;
+		UserUuidAuthTime = null;
 		UserToken_ValidTime = null;
 		UserToken_DeleteTime = null;
 		VerfiyCodeLength = null;
 		VerfiyCodeValidTime = null;
 		MSGSEND_LIMITCOUNT_EMAIL = null;
 		MSGSEND_LIMITCOUNT_MOBILE = null;
-		MSGSEND_LIMITCOUNT_USER = null;
 		MSGSEND_LIMITCOUNT_UUID = null;
+		MSGSEND_LIMITCOUNT_USER = null;
 		APPINFO_MODIFY_LIMIT_ONE = null;
+		SYSTEMLOG_ASYNC = null;
 	}
 
 	public synchronized static void forceLoadProperty() {
@@ -69,6 +76,8 @@ public class AppConfig {
 			UserPwdMinLength = configProperty.getValInteger("user.pwd_min_length");
 			UserPwdMaxLength = configProperty.getValInteger("user.pwd_max_length", 24);
 			UserPwdMinRule = configProperty.getValInteger("user.pwd_min_rule");
+			UserPwdErrLimit = configProperty.getValInteger("user.pwd_err_limit");
+			UserUuidAuthTime = configProperty.getValLongTime("user.uuid_authtime");
 			UserToken_ValidTime = configProperty.getValLongTime("usertoken.validtime");
 			UserToken_DeleteTime = configProperty.getValLongTime("usertoken.deletetime");
 			VerfiyCodeLength = configProperty.getValInteger("msg.verify_code_length", 6);
@@ -81,10 +90,10 @@ public class AppConfig {
 			VerfiyCodeValidTime = configProperty.getValLongTime("msg.verify_code_valid_time", 15 * 60 * 1000l);
 			MSGSEND_LIMITCOUNT_EMAIL = configProperty.getValInteger("msgsend.limitcount_email");
 			MSGSEND_LIMITCOUNT_MOBILE = configProperty.getValInteger("msgsend.limitcount_mobile");
-			MSGSEND_LIMITCOUNT_USER = configProperty.getValInteger("msgsend.limitcount_user");
 			MSGSEND_LIMITCOUNT_UUID = configProperty.getValInteger("msgsend.limitcount_uuid");
+			MSGSEND_LIMITCOUNT_USER = configProperty.getValInteger("msgsend.limitcount_user");
 			APPINFO_MODIFY_LIMIT_ONE = configProperty.getValInteger("appinfo.modify.limitone");
-
+			SYSTEMLOG_ASYNC = configProperty.getValBoolean("systemlog.async");
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -118,19 +127,5 @@ public class AppConfig {
 	public static String TERM_TYPE_IPHONE = "2";
 	public static String TERM_TYPE_WEB = "3";
 	public static String TERM_TYPE_ALL = "4";
-	public static String PWD_ERROR_PARSE = "密码解析有误，请求参数错误";
-
-	// public static int getUpdateVersion(int version) {
-	// if (version <= 0) {
-	// return 5;
-	// }
-	//
-	// if (version % 5 == 0) {
-	// return version + 5;
-	// }
-	// else {
-	// return version - version % 5 + 5;
-	// }
-	// }
 
 }

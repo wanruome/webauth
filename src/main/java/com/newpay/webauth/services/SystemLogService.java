@@ -5,9 +5,12 @@
  */
 package com.newpay.webauth.services;
 
-import com.alibaba.fastjson.JSONObject;
+import com.newpay.webauth.dal.core.SysLogBean;
 
 public interface SystemLogService {
-	public boolean writeLogs(String functionId, String functionName, String userId, String uuid, String appId,
-			JSONObject jsonObject);
+	public void writeLogs(SysLogBean sysLogBean, String code, String msg);
+
+	// public boolean writeLogs(String functionId, String functionName, String userId, String uuid,
+	// String appId,
+	// JSONObject jsonObject);
 }

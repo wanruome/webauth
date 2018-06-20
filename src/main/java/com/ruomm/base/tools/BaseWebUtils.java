@@ -92,4 +92,25 @@ public class BaseWebUtils {
 		}
 		return realUri;
 	}
+
+	public static String[] getRealUriToArray(String uri) {
+		if (StringUtils.isEmpty(uri)) {
+			return null;
+		}
+		String realUri = null;
+		int indexW = uri.indexOf("?");
+		if (indexW > 0) {
+			// 严格匹配
+			// realUri = uri.substring(0, indexW);
+			// 通用匹配
+			realUri = uri.substring(0, indexW).replaceAll("[/]+", "/").replaceFirst(":/", "://");
+		}
+		else {
+			// 严格匹配
+			// realUri = uri;
+			// 通用匹配
+			realUri = uri.replaceAll("[/]+", "/").replaceFirst(":/", "://");
+		}
+		return realUri.substring(1).split("/");
+	}
 }

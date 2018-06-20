@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.Data;
+import tk.mybatis.mapper.annotation.Version;
 
 @Data
 @Table(name = "tbl_util_seq")
@@ -19,4 +20,7 @@ public class DbSequence {
 	private String seqName;
 	@Column(name = "SEQ_VALUE")
 	private Integer seqValue;
+	@Version
+	@Column(name = "VERSION")
+	private Integer version;
 }

@@ -28,6 +28,17 @@ public class LoginUserAccount {
 	private String loginPwd;
 	@Column(name = "STATUS")
 	private Integer status;
+	@Column(name = "PWD_ERR_COUNT")
+	private Integer pwdErrCount;
+	@Column(name = "LAST_AUTH_UUID")
+	private String lastAuthUuid;
+	@Column(name = "LAST_AUTH_TIME")
+	private String lastAuthTime;
+	@Column(name = "REGISTER_TIME")
+	private String registerTime;
+	@Column(name = "UPDATE_TIME")
+	private String updateTime;
+
 	@Version
 	@Column(name = "VERSION")
 	private Integer version;

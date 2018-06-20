@@ -78,9 +78,12 @@ public class SecureTokenServiceImpl implements SecureTokenService {
 		queryUUIDToken.setAppId(appId);
 		queryUUIDToken.setUserId(userId);
 		queryUUIDToken.setUuid(realUUID);
+
 		LoginUserToken resultUUIDToken = loginUserTokenMapper.selectOne(queryUUIDToken);
+		// 查找该设备是否可以直接登录
+		boolean isUuidCanLogin = isUuidCanLogin(userInfoLoginReqDto, resultLoginUserAccount);
 		// 查找有没有该UUID下面的设备，有的话不需要验证码登录
-		if (StringUtils.isEmpty(userInfoLoginReqDto.getMsgVerifyCode())) {
+		if (StringUtils.isEmpty(userInfoLoginReqDto.getMsgVerifyCode()) && !isUuidCanLogin) {
 			// 查看设备授权状态
 			JSONObject jsonResult = ResultFactory.toNack(ResultFactory.ERR_NEED_VERIFYCODE, "需要验证码登录");
 			if (null == resultUUIDToken) {
@@ -214,6 +217,34 @@ public class SecureTokenServiceImpl implements SecureTokenService {
 				tokenResponseParse.setReturnResp(ResultFactory.toNackDB("无法登录"));
 				return tokenResponseParse;
 			}
+		}
+	}
+
+	private boolean isUuidCanLogin(UserInfoLoginReqDto userInfoLoginReqDto, LoginUserAccount resultLoginUserAccount) {
+		if (!StringUtils.isEmpty(userInfoLoginReqDto.getMsgVerifyCode())) {
+			return true;
+		}
+		if (!userInfoLoginReqDto.getUuid().equals(resultLoginUserAccount.getLastAuthUuid())) {
+			return false;
+		}
+		else {
+			try {
+				long timeLastValidTime = AppConfig.SDF_DB_VERSION.parse(resultLoginUserAccount.getLastAuthTime())
+						.getTime();
+				long timeSkip = new Date().getTime() - timeLastValidTime;
+				if (timeSkip < 0 || timeSkip > AppConfig.UserUuidAuthTime) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
+
 		}
 	}
 

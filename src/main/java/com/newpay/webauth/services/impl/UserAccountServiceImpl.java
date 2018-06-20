@@ -7,6 +7,7 @@ package com.newpay.webauth.services.impl;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.newpay.webauth.aop.SystemLogThreadLocal;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.core.TokenResponseParse;
 import com.newpay.webauth.dal.mapper.LoginAppInfoMapper;
@@ -55,101 +57,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Autowired
 	LoginUserAccountMapper loginUserAccountMapper;
 	boolean VERIFY_IN_DB = true;
-
-	@Override
-	public Object doLogin(UserInfoLoginReqDto userInfoLoginReqDto) {
-		LoginUserAccount queryUserAccount = new LoginUserAccount();
-		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserAccount.setLoginMobile(userInfoLoginReqDto.getAccount());
-		}
-		else if (AppConfig.ACCOUNT_TYPE_EMAIL.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserAccount.setLoginEmail(userInfoLoginReqDto.getAccount());
-		}
-		else if (AppConfig.ACCOUNT_TYPE_NAME.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserAccount.setLoginName(userInfoLoginReqDto.getAccount());
-		}
-		else if (AppConfig.ACCOUNT_TYPE_USERID.equals(userInfoLoginReqDto.getAccountType())) {
-			queryUserAccount.setLoginId(userInfoLoginReqDto.getAccount());
-		}
-		else {
-			return ResultFactory.toNackPARAM();
-		}
-		LoginAppInfo queryLoginAppinfo = new LoginAppInfo();
-		queryLoginAppinfo.setAppId(userInfoLoginReqDto.getAppId());
-		LoginAppInfo resultLoginAppinfo = loginAppInfoMapper.selectByPrimaryKey(queryLoginAppinfo);
-		if (null == resultLoginAppinfo || resultLoginAppinfo.getStatus() != 1) {
-			return ResultFactory.toNackCORE("无法登陆，应用授权失败");
-		}
-
-		LoginUserAccount resultLoginUserAccount = loginUserAccountMapper.selectOne(queryUserAccount);
-		if (null == resultLoginUserAccount) {
-			return ResultFactory.toNackCORE("用户不存在");
-		}
-		else if (!resultLoginUserAccount.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
-			return ResultFactory.toNackCORE("密码错误");
-		}
-		// String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
-		// UsernamePasswordToken shiroToken = new
-		// UsernamePasswordToken(resultLoginUserAccount.getLoginId(),
-		// TokenUtil.generateToken(), false);
-		// SecurityUtils.getSubject().login(shiroToken);
-		// TokenResponseParse tokenResponseParse = userTokenInfoService.createTokenForLogin(
-		// resultLoginUserAccount.getLoginId(), userInfoLoginReqDto.getAppId(),
-		// userInfoLoginReqDto.getTermType(),
-		// userInfoLoginReqDto.getUuid());
-		TokenResponseParse tokenResponseParse = secureTokenService.createTokenForLogin(userInfoLoginReqDto,
-				resultLoginUserAccount, resultLoginAppinfo);
-		if (!tokenResponseParse.isValid()) {
-			return tokenResponseParse.getReturnResp();
-		}
-		// 发送数据到第三方服务器上
-		if (!StringUtils.isEmpty(resultLoginAppinfo.getNotifyUrl())
-				&& resultLoginAppinfo.getNotifyUrl().toLowerCase().startsWith("http")) {
-			List<JSONObject> lstTokenJsons = new ArrayList<JSONObject>();
-			List<LoginUserToken> lstToken = tokenResponseParse.getTokenList();
-			StringBuilder sb = new StringBuilder();
-			for (LoginUserToken tmp : lstToken) {
-				sb.append(tmp.getTokenId()).append(tmp.getToken());
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put("userId", tmp.getUserId());
-				jsonObject.put("tokenId", tmp.getTokenId());
-				jsonObject.put("token", tmp.getToken());
-				jsonObject.put("termType", tmp.getTermType());
-				jsonObject.put("validTime", tmp.getValidTime());
-				lstTokenJsons.add(jsonObject);
-			}
-			String tokenSignMd5 = EncryptUtils.encodingMD5(sb.toString());
-			PublicKey tokenKey = RSAUtils.getPublicKey(Base64.decode(resultLoginAppinfo.getPublicKey()));
-			byte[] tokeSignData = RSAUtils.encryptData(tokenSignMd5.getBytes(), tokenKey);
-			if (null == tokeSignData) {
-				return ResultFactory.toNackCORE("应用授权登录失败，应用秘钥不正确");
-			}
-			String tokenSignRSAMD5 = Base64.encode(tokeSignData);
-
-			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("signInfo", tokenSignRSAMD5);
-			jsonObject.put("tokenList", lstTokenJsons);
-			jsonObject.put("token", tokenResponseParse.getTokenList());
-			JSONObject json = ResultFactory.toAck(jsonObject);
-			ResponseData responseData = new DataOKHttp().setUrl(resultLoginAppinfo.getNotifyUrl())
-					.setRequestBody(json.toJSONString()).setRequestBody("fads").doHttp(String.class);
-			if (null == responseData || responseData.getStatus() != HttpConfig.Code_Success) {
-				return ResultFactory.toNackCORE("应用授权登录失败，第三方服务器无响应");
-			}
-		}
-		Map<String, String> resultData = new HashMap<>();
-		resultData.put("tokenId", tokenResponseParse.getLoginUserToken().getTokenId());
-		resultData.put("token", tokenResponseParse.getLoginUserToken().getToken());
-		resultData.put("validTime", tokenResponseParse.getLoginUserToken().getValidTime());
-		resultData.put("termType", tokenResponseParse.getLoginUserToken().getTermType() + "");
-		resultData.put("version", tokenResponseParse.getLoginUserToken().getVersion() + "");
-		resultData.put("userId", resultLoginUserAccount.getLoginId());
-		resultData.put("appId", tokenResponseParse.getLoginUserToken().getAppId());
-		resultData.put("email", resultLoginUserAccount.getLoginEmail());
-		resultData.put("name", resultLoginUserAccount.getLoginName());
-		resultData.put("mobile", resultLoginUserAccount.getLoginMobile());
-		return ResultFactory.toAck(resultData);
-	}
 
 	@Override
 	public Object doRegister(UserInfoRegisterReqDto loginUserReqDto) {
@@ -218,6 +125,13 @@ public class UserAccountServiceImpl implements UserAccountService {
 		insertUserAccount.setLoginId(dbSeqService.getLoginUserNewPK());
 		insertUserAccount.setVersion(1);
 		insertUserAccount.setStatus(1);
+		String nowTimeStr = AppConfig.SDF_DB_VERSION.format(new Date());
+		insertUserAccount.setRegisterTime(nowTimeStr);
+		insertUserAccount.setUpdateTime(nowTimeStr);
+		insertUserAccount.setPwdErrCount(0);
+		insertUserAccount.setLastAuthUuid(loginUserReqDto.getUuid());
+		insertUserAccount.setLastAuthTime(nowTimeStr);
+		SystemLogThreadLocal.setUserId(insertUserAccount.getLoginId());
 		int dbResult = loginUserAccountMapper.insertSelective(insertUserAccount);
 		if (dbResult > 0) {
 			return ResultFactory.toAck(null);
@@ -225,6 +139,114 @@ public class UserAccountServiceImpl implements UserAccountService {
 		else {
 			return ResultFactory.toNackCORE("注册失败：手机号、用户名、邮箱等重复");
 		}
+	}
+
+	@Override
+	public Object doLogin(UserInfoLoginReqDto userInfoLoginReqDto) {
+		LoginUserAccount queryUserAccount = new LoginUserAccount();
+		if (AppConfig.ACCOUNT_TYPE_MOBILE.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserAccount.setLoginMobile(userInfoLoginReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_EMAIL.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserAccount.setLoginEmail(userInfoLoginReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_NAME.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserAccount.setLoginName(userInfoLoginReqDto.getAccount());
+		}
+		else if (AppConfig.ACCOUNT_TYPE_USERID.equals(userInfoLoginReqDto.getAccountType())) {
+			queryUserAccount.setLoginId(userInfoLoginReqDto.getAccount());
+		}
+		else {
+			return ResultFactory.toNackPARAM();
+		}
+		LoginUserAccount resultLoginUserAccount = loginUserAccountMapper.selectOne(queryUserAccount);
+		if (null == resultLoginUserAccount) {
+			return ResultFactory.toNackCORE("用户不存在");
+		}
+		SystemLogThreadLocal.setUserId(resultLoginUserAccount.getLoginId());
+		if (null != resultLoginUserAccount.getPwdErrCount() && AppConfig.UserPwdErrLimit > 0
+				&& resultLoginUserAccount.getPwdErrCount() > 5) {
+			return ResultFactory.toNack(ResultFactory.ERR_NEED_VERIFYCODE, "密码错误次数过多，请验证登录或找回密码");
+		}
+		// 验证密码错误次数
+		if (!resultLoginUserAccount.getLoginPwd().equals(userInfoLoginReqDto.getPwd())) {
+			updateLoginUserPwdCount(userInfoLoginReqDto, resultLoginUserAccount, false);
+			return ResultFactory.toNack(ResultFactory.ERR_PWD_WRONG, null);
+		}
+		else {
+			boolean flagPwdCount = updateLoginUserPwdCount(userInfoLoginReqDto, resultLoginUserAccount, true);
+			if (!flagPwdCount) {
+				return ResultFactory.toNackDB();
+			}
+		}
+
+		LoginAppInfo queryLoginAppinfo = new LoginAppInfo();
+		queryLoginAppinfo.setAppId(userInfoLoginReqDto.getAppId());
+		LoginAppInfo resultLoginAppinfo = loginAppInfoMapper.selectByPrimaryKey(queryLoginAppinfo);
+		if (null == resultLoginAppinfo || resultLoginAppinfo.getStatus() != 1) {
+			return ResultFactory.toNackCORE("无法登陆，应用授权失败");
+		}
+		// String token = EncryptUtils.encodingMD5(TokenUtil.generateToken());
+		// UsernamePasswordToken shiroToken = new
+		// UsernamePasswordToken(resultLoginUserAccount.getLoginId(),
+		// TokenUtil.generateToken(), false);
+		// SecurityUtils.getSubject().login(shiroToken);
+		// TokenResponseParse tokenResponseParse = userTokenInfoService.createTokenForLogin(
+		// resultLoginUserAccount.getLoginId(), userInfoLoginReqDto.getAppId(),
+		// userInfoLoginReqDto.getTermType(),
+		// userInfoLoginReqDto.getUuid());
+		TokenResponseParse tokenResponseParse = secureTokenService.createTokenForLogin(userInfoLoginReqDto,
+				resultLoginUserAccount, resultLoginAppinfo);
+		if (!tokenResponseParse.isValid()) {
+			return tokenResponseParse.getReturnResp();
+		}
+		// 发送数据到第三方服务器上
+		if (!StringUtils.isEmpty(resultLoginAppinfo.getNotifyUrl())
+				&& resultLoginAppinfo.getNotifyUrl().toLowerCase().startsWith("http")) {
+			List<JSONObject> lstTokenJsons = new ArrayList<JSONObject>();
+			List<LoginUserToken> lstToken = tokenResponseParse.getTokenList();
+			StringBuilder sb = new StringBuilder();
+			for (LoginUserToken tmp : lstToken) {
+				sb.append(tmp.getTokenId()).append(tmp.getToken());
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("userId", tmp.getUserId());
+				jsonObject.put("tokenId", tmp.getTokenId());
+				jsonObject.put("token", tmp.getToken());
+				jsonObject.put("termType", tmp.getTermType());
+				jsonObject.put("validTime", tmp.getValidTime());
+				lstTokenJsons.add(jsonObject);
+			}
+			String tokenSignMd5 = EncryptUtils.encodingMD5(sb.toString());
+			PublicKey tokenKey = RSAUtils.getPublicKey(Base64.decode(resultLoginAppinfo.getPublicKey()));
+			byte[] tokeSignData = RSAUtils.encryptData(tokenSignMd5.getBytes(), tokenKey);
+			if (null == tokeSignData) {
+				return ResultFactory.toNackCORE("应用授权登录失败，应用秘钥不正确");
+			}
+			String tokenSignRSAMD5 = Base64.encode(tokeSignData);
+
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("signInfo", tokenSignRSAMD5);
+			jsonObject.put("tokenList", lstTokenJsons);
+			jsonObject.put("token", tokenResponseParse.getTokenList());
+			JSONObject json = ResultFactory.toAck(jsonObject);
+			ResponseData responseData = new DataOKHttp().setUrl(resultLoginAppinfo.getNotifyUrl())
+					.setRequestBody(json.toJSONString()).setRequestBody("fads").doHttp(String.class);
+			if (null == responseData || responseData.getStatus() != HttpConfig.Code_Success) {
+				return ResultFactory.toNackCORE("应用授权登录失败，第三方服务器无响应");
+			}
+		}
+		Map<String, String> resultData = new HashMap<>();
+		resultData.put("tokenId", tokenResponseParse.getLoginUserToken().getTokenId());
+		resultData.put("token", tokenResponseParse.getLoginUserToken().getToken());
+		resultData.put("validTime", tokenResponseParse.getLoginUserToken().getValidTime());
+		resultData.put("termType", tokenResponseParse.getLoginUserToken().getTermType() + "");
+		resultData.put("version", tokenResponseParse.getLoginUserToken().getVersion() + "");
+		resultData.put("userId", resultLoginUserAccount.getLoginId());
+		resultData.put("appId", tokenResponseParse.getLoginUserToken().getAppId());
+		resultData.put("email", resultLoginUserAccount.getLoginEmail());
+		resultData.put("name", resultLoginUserAccount.getLoginName());
+		resultData.put("mobile", resultLoginUserAccount.getLoginMobile());
+		return ResultFactory.toAck(resultData);
 	}
 
 	@Override
@@ -240,11 +262,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 			return ResultFactory.toNackCORE("用户不存在");
 		}
 		if (!userInfoModifyPwd.getOldPwd().equals(dbLoginUserAccount.getLoginPwd())) {
-			return ResultFactory.toNackCORE("旧的密码不正确");
+			return ResultFactory.toNack(ResultFactory.ERR_PWD_WRONG, "旧的密码不正确");
 		}
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
 		updateUserAccount.setLoginId(userInfoModifyPwd.getUserId());
 		updateUserAccount.setLoginPwd(userInfoModifyPwd.getNewPwd());
+		updateUserAccount.setUpdateTime(AppConfig.SDF_DB_VERSION.format(new Date()));
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
@@ -276,9 +299,14 @@ public class UserAccountServiceImpl implements UserAccountService {
 		if (dbLoginUserAccount.getStatus() != 1) {
 			return ResultFactory.toNackCORE("账户已停用");
 		}
+		String nowTimeStr = AppConfig.SDF_DB_VERSION.format(new Date());
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
 		updateUserAccount.setLoginId(dbLoginUserAccount.getLoginId());
 		updateUserAccount.setLoginPwd(userInfoFindPwd.getNewPwd());
+		updateUserAccount.setLastAuthTime(nowTimeStr);
+		updateUserAccount.setLastAuthUuid(userInfoFindPwd.getUuid());
+		updateUserAccount.setPwdErrCount(0);
+		updateUserAccount.setUpdateTime(nowTimeStr);
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			return ResultFactory.toAck(null);
@@ -317,6 +345,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
 		updateUserAccount.setLoginId(userInfoModifyMobie.getUserId());
 		updateUserAccount.setLoginMobile(userInfoModifyMobie.getNewMobile());
+		updateUserAccount.setUpdateTime(AppConfig.SDF_DB_VERSION.format(new Date()));
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
@@ -399,6 +428,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		LoginUserAccount updateUserAccount = new LoginUserAccount();
 		updateUserAccount.setLoginId(userInfoModifyName.getUserId());
 		updateUserAccount.setLoginName(userInfoModifyName.getNewName());
+		updateUserAccount.setUpdateTime(AppConfig.SDF_DB_VERSION.format(new Date()));
 		boolean dbFlag = updateLoginUserAccount(dbLoginUserAccount, updateUserAccount);
 		if (dbFlag) {
 			Map<String, String> mapResult = new HashMap<String, String>();
@@ -417,7 +447,39 @@ public class UserAccountServiceImpl implements UserAccountService {
 		return loginUserAccountMapper.selectByPrimaryKey(queryUserAccount);
 	}
 
+	public boolean updateLoginUserPwdCount(UserInfoLoginReqDto userInfoLoginReqDto, LoginUserAccount dbLoginUserAccount,
+			boolean isSuccess) {
+		if (isSuccess) {
+			LoginUserAccount updateBean = new LoginUserAccount();
+			updateBean.setLoginId(dbLoginUserAccount.getLoginId());
+			updateBean.setPwdErrCount(0);
+			updateBean.setLastAuthUuid(userInfoLoginReqDto.getUuid());
+			updateBean.setLastAuthTime(AppConfig.SDF_DB_VERSION.format(new Date()));
+			updateBean.setVersion(dbLoginUserAccount.getVersion());
+			int dbResult = loginUserAccountMapper.updateByPrimaryKeySelective(updateBean);
+			if (dbResult > 0) {
+				dbLoginUserAccount.setVersion(dbLoginUserAccount.getVersion() + 1);
+			}
+			return dbResult > 0 ? true : false;
+		}
+		else {
+			LoginUserAccount updateBean = new LoginUserAccount();
+			updateBean.setLoginId(dbLoginUserAccount.getLoginId());
+			updateBean.setPwdErrCount(
+					null == dbLoginUserAccount.getPwdErrCount() ? 1 : dbLoginUserAccount.getPwdErrCount() + 1);
+
+			updateBean.setVersion(dbLoginUserAccount.getVersion());
+			int dbResult = loginUserAccountMapper.updateByPrimaryKeySelective(updateBean);
+			if (dbResult > 0) {
+				dbLoginUserAccount.setVersion(dbLoginUserAccount.getVersion() + 1);
+			}
+			return dbResult > 0 ? true : false;
+		}
+
+	}
+
 	public boolean updateLoginUserAccount(LoginUserAccount dbLoginUserAccount, LoginUserAccount updateUserAccount) {
+
 		updateUserAccount.setVersion(dbLoginUserAccount.getVersion());
 		int dbResult = loginUserAccountMapper.updateByPrimaryKeySelective(updateUserAccount);
 		return dbResult > 0 ? true : false;

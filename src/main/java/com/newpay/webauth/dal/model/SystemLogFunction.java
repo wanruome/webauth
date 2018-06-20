@@ -19,8 +19,13 @@ public class SystemLogFunction {
 	private String functionId;
 	@Column(name = "FUNCTION_NAME")
 	private String functionName;
+	@Column(name = "LOG_KEY_FIELD_NAME")
+	private String logKeyFieldName;
 	@Column(name = "MAPPING")
 	private String mapping;
+	@Column(name = "REQUEST_LOG")
+	private Integer requstLog;
 	@Column(name = "STATUS")
 	private Integer status;
+
 }

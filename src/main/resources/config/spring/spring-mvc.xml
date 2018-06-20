@@ -48,7 +48,9 @@
 				<property name="supportedMediaTypes">
 					<list>
 						<value>text/html;charset=UTF-8</value>
+						<value>text/plain;charset=UTF-8</value>
 						<value>application/json</value>
+
 					</list>
 				</property>
 				<property name="features">
@@ -108,5 +110,5 @@
 		<property name="maxInMemorySize" value="40960" />
 	</bean>
 	<!--  -->
-	<!-- <bean class="com.newpay.webauth.exceotion.CustomExceptionResolver"></bean>  -->
+	<bean class="com.newpay.webauth.exceotion.CustomExceptionResolver"></bean>
 </beans>
