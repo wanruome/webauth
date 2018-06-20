@@ -471,6 +471,7 @@ public class MsgSendServiceImpl implements MsgSendService {
 		else {
 			Map<String, String> dataResult = new HashMap<>();
 			dataResult.put("msgToken", resultMsgAuthInfo.getMsgToken());
+			dataResult.put("functionTo", resultMsgAuthInfo.getFunctionToId());
 			return ResultFactory.toAck(dataResult);
 		}
 	}

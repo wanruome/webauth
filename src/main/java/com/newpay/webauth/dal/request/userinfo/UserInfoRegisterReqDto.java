@@ -12,6 +12,8 @@ import lombok.Data;
 @Data
 public class UserInfoRegisterReqDto {
 	@NotEmpty
+	private String uuid;
+	@NotEmpty
 	private String account;
 	@NotEmpty
 	private String accountType;
@@ -19,8 +21,7 @@ public class UserInfoRegisterReqDto {
 	private String pwd;
 	@NotEmpty
 	private String pwdEncrypt;
-	@NotEmpty
-	private String uuid;
+
 	@NotEmpty
 	private String msgVerifyCode;
 	private String name;

@@ -12,6 +12,8 @@ import lombok.Data;
 @Data
 public class UserInfoFindPwd {
 	@NotEmpty
+	private String uuid;
+	@NotEmpty
 	private String account;
 	@NotEmpty
 	private String accountType;
@@ -19,8 +21,7 @@ public class UserInfoFindPwd {
 	private String newPwd;
 	@NotEmpty
 	private String newPwdEncrypt;
-	@NotEmpty
-	private String uuid;
+
 	@NotEmpty
 	private String msgVerifyCode;
 }

@@ -32,8 +32,8 @@ import com.newpay.webauth.dal.request.userinfo.UserInfoModifyPwd;
 import com.newpay.webauth.dal.request.userinfo.UserInfoRegisterReqDto;
 import com.newpay.webauth.dal.response.ResultFactory;
 import com.newpay.webauth.services.DbSeqService;
+import com.newpay.webauth.services.SecureTokenService;
 import com.newpay.webauth.services.UserAccountService;
-import com.newpay.webauth.services.UserTokenInfoService;
 import com.ruomm.base.http.HttpConfig;
 import com.ruomm.base.http.ResponseData;
 import com.ruomm.base.http.okhttp.DataOKHttp;
@@ -49,7 +49,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Autowired
 	LoginAppInfoMapper loginAppInfoMapper;
 	@Autowired
-	UserTokenInfoService userTokenInfoService;
+	SecureTokenService secureTokenService;
 	@Autowired
 	DbSeqService dbSeqService;
 	@Autowired
@@ -93,10 +93,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 		// UsernamePasswordToken(resultLoginUserAccount.getLoginId(),
 		// TokenUtil.generateToken(), false);
 		// SecurityUtils.getSubject().login(shiroToken);
-
-		TokenResponseParse tokenResponseParse = userTokenInfoService.createTokenForLogin(
-				resultLoginUserAccount.getLoginId(), userInfoLoginReqDto.getAppId(), userInfoLoginReqDto.getTermType(),
-				userInfoLoginReqDto.getUuid());
+		// TokenResponseParse tokenResponseParse = userTokenInfoService.createTokenForLogin(
+		// resultLoginUserAccount.getLoginId(), userInfoLoginReqDto.getAppId(),
+		// userInfoLoginReqDto.getTermType(),
+		// userInfoLoginReqDto.getUuid());
+		TokenResponseParse tokenResponseParse = secureTokenService.createTokenForLogin(userInfoLoginReqDto,
+				resultLoginUserAccount, resultLoginAppinfo);
 		if (!tokenResponseParse.isValid()) {
 			return tokenResponseParse.getReturnResp();
 		}

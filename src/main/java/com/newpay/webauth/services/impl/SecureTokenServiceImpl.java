@@ -13,6 +13,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.newpay.webauth.config.AppConfig;
 import com.newpay.webauth.dal.core.TokenResponseParse;
 import com.newpay.webauth.dal.mapper.LoginUserTokenMapper;
@@ -42,8 +43,8 @@ public class SecureTokenServiceImpl implements SecureTokenService {
 		String appId = resultLoginAppInfo.getAppId();
 		String userId = resultLoginUserAccount.getLoginId();
 		String termType = userInfoLoginReqDto.getTermType();
-		String uuid = userInfoLoginReqDto.getUuid();
-		String realUUID = appId + "_" + userId + "_" + uuid;
+		String uuidTemp = userInfoLoginReqDto.getUuid();
+		String realUUID = appId + "_" + userId + "_" + uuidTemp;
 		TokenResponseParse tokenResponseParse = new TokenResponseParse();
 		tokenResponseParse.setValid(false);
 		tokenResponseParse.setNeedVerifyCode(false);
@@ -81,9 +82,9 @@ public class SecureTokenServiceImpl implements SecureTokenService {
 		// 查找有没有该UUID下面的设备，有的话不需要验证码登录
 		if (StringUtils.isEmpty(userInfoLoginReqDto.getMsgVerifyCode())) {
 			// 查看设备授权状态
-
+			JSONObject jsonResult = ResultFactory.toNack(ResultFactory.ERR_NEED_VERIFYCODE, "需要验证码登录");
 			if (null == resultUUIDToken) {
-				tokenResponseParse.setNeedVerifyCode(true);
+				tokenResponseParse.setReturnResp(jsonResult);
 				return tokenResponseParse;
 			}
 			else {
@@ -91,14 +92,14 @@ public class SecureTokenServiceImpl implements SecureTokenService {
 					long timeLastValidTime = AppConfig.SDF_DB_VERSION.parse(resultUUIDToken.getValidTime()).getTime();
 					long timeSkip = new Date().getTime() - timeLastValidTime;
 					if (timeSkip < 0 || timeSkip > AppConfig.UserToken_DeleteTime) {
-						tokenResponseParse.setNeedVerifyCode(true);
+						tokenResponseParse.setReturnResp(jsonResult);
 						return tokenResponseParse;
 					}
 				}
 				catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					tokenResponseParse.setNeedVerifyCode(true);
+					tokenResponseParse.setReturnResp(jsonResult);
 					return tokenResponseParse;
 				}
 

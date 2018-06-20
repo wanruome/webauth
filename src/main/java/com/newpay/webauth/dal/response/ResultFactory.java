@@ -17,10 +17,10 @@ public class ResultFactory {
 	private static String ERR_CORE = "e402";
 	private static String ERR_DB = "e403";
 	public static String ERR_UNKNOWN = "e499";
+	public static String ERR_NEED_VERIFYCODE = "e409";
 	public static String ERR_PARSE_REQUEST = "e410";
 	public static String ERR_TOKEN_INVALID = "e411";
 	public static String ERR_MSGCODE_INVALID = "e412";
-
 	// public static String ERROR_TOKEN_MISS = "e001";
 	// public static String ERROR_TOKEN_INVALID = "e000";
 	private static String SUCESS_CODE = "0000";

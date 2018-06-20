@@ -12,18 +12,18 @@ import lombok.Data;
 @Data
 public class UserInfoLoginReqDto {
 	@NotEmpty
+	private String uuid;
+	@NotEmpty
+	private String appId;
+	@NotEmpty
+	private String termType;
+	@NotEmpty
 	private String account;
 	@NotEmpty
 	private String accountType;
 	@NotEmpty
 	private String pwd;
 	@NotEmpty
-	private String uuid;
-	@NotEmpty
 	private String pwdEncrypt;
-	@NotEmpty
-	private String appId;
-	@NotEmpty
-	private String termType;
 	private String msgVerifyCode;
 }
